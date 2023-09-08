@@ -21,7 +21,8 @@ RUN apt-get update \
     unzip \
     wget \
     zip \
-    zsh
+    zsh \
+    postgresql-client
 
 # Install Node.js v20
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \

@@ -20,6 +20,7 @@ services:
     volumes:
       - ./:/var/www/html/
       - ./logs/php/:/var/log/
+    entrypoint: [ "/bin/sh", "-c", "php artisan migrate && docker-php-entrypoint php-fpm"]
   postgres:
     image: postgres:14
     ports: 
