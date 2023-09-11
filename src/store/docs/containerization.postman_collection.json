@@ -1,0 +1,320 @@
+{
+	"info": {
+		"_postman_id": "a88a3822-c6bc-4319-86bb-d3ba924133e5",
+		"name": "AWS Workshop - Containerization",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5104465"
+	},
+	"item": [
+		{
+			"name": "Books",
+			"item": [
+				{
+					"name": "Create New Book",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer  {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "Book 2",
+									"type": "text"
+								},
+								{
+									"key": "summary",
+									"value": "This is a technical book for software developers",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "16.50",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{STORE_DOMAIN}}/api/books",
+							"host": [
+								"{{STORE_DOMAIN}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Book List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{STORE_DOMAIN}}/api/books",
+							"host": [
+								"{{STORE_DOMAIN}}"
+							],
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Book Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{STORE_DOMAIN}}/api/books/{{BOOK_ID}}",
+							"host": [
+								"{{STORE_DOMAIN}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{BOOK_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit Specific Book",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "Book 2",
+									"type": "text"
+								},
+								{
+									"key": "summary",
+									"value": "This is a technical book for software developers",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "17.50",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{STORE_DOMAIN}}/api/books/{{BOOK_ID}}",
+							"host": [
+								"{{STORE_DOMAIN}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{BOOK_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Specific Book",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{ACCESS_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{STORE_DOMAIN}}/api/books/{{BOOK_ID}}",
+							"host": [
+								"{{STORE_DOMAIN}}"
+							],
+							"path": [
+								"api",
+								"books",
+								"{{BOOK_ID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register User",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "Tien Nguyen",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "luantien411@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "12345678",
+									"type": "text"
+								},
+								{
+									"key": "confirm_password",
+									"value": "12345678",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{STORE_DOMAIN}}/api/register",
+							"host": [
+								"{{STORE_DOMAIN}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"\r",
+									"    if (pm.response.code === 200) {\r",
+									"        let jsonData = pm.response.json();\r",
+									"        pm.environment.set(\"ACCESS_TOKEN\", jsonData.data.token);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "luantien411@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "12345678",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{STORE_DOMAIN}}/api/login",
+							"host": [
+								"{{STORE_DOMAIN}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
