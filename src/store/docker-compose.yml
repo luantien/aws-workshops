@@ -1,26 +1,5 @@
 version: '3.1'
 services:
-  nginx:
-    build:
-      context: ./docker/nginx
-      dockerfile: Dockerfile
-    ports: 
-      - "8080:80"
-    networks:
-      - internal
-    volumes:
-      - ./:/var/www/html/
-      - ./logs/nginx:/var/log/nginx/
-  php:
-    build:
-      context: ./docker/php
-      dockerfile: Dockerfile
-    networks:
-      - internal
-    volumes:
-      - ./:/var/www/html/
-      - ./logs/php/:/var/log/
-    entrypoint: [ "/bin/sh", "-c", "php artisan migrate && docker-php-entrypoint php-fpm"]
   postgres:
     image: postgres:14
     ports: 
@@ -32,6 +11,33 @@ services:
     environment:
       - POSTGRES_PASSWORD=123456
     restart: always
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    networks:
+      - internal
+    volumes:
+      - ./:/var/www/html/
+      - ./logs/php/:/var/log/
+    environment:
+      - DB_HOST=postgres
+    entrypoint: [ "/bin/sh", "-c", "php artisan migrate && docker-php-entrypoint php-fpm"]
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    depends_on:
+      - php
+    ports: 
+      - "8080:80"
+    networks:
+      - internal
+    volumes:
+      - ./:/var/www/html/
+      - ./logs/nginx:/var/log/nginx/
 networks:
   internal:
     driver: bridge
