@@ -1,6 +1,5 @@
 import { Construct } from "constructs";
-import { IVpc, Vpc, IpAddresses, SubnetType } from 'aws-cdk-lib/aws-ec2';
-import { Bucket } from "aws-cdk-lib/aws-s3";
+import * as Ec2 from 'aws-cdk-lib/aws-ec2';
 
 export interface InfrastructureProps {
     region: string | undefined;
@@ -8,37 +7,62 @@ export interface InfrastructureProps {
 }
 
 export class Infrastructure extends Construct {
-    public readonly vpc: IVpc | undefined;
-    public readonly s3Bucket: Bucket | undefined;
-    public readonly ecrRepo: string | undefined;
+    public readonly vpc: Ec2.IVpc | undefined;
+    public readonly ingressSecGroup: Ec2.ISecurityGroup | undefined;
+    public readonly appSecGroup: Ec2.ISecurityGroup | undefined;
 
     constructor(scope: Construct, id: string, props?: InfrastructureProps) {
         super(scope, id);
 
-        this.vpc = new Vpc(this, 'vpc', {
+        this.vpc = new Ec2.Vpc(this, 'Vpc', {
             vpcName: `vpc-${props?.region}-${props?.username}-workshop`,
-            ipAddresses: IpAddresses.cidr('10.16.0.0/16'),
+            ipAddresses: Ec2.IpAddresses.cidr('10.16.0.0/16'),
             availabilityZones: [`${props?.region}a`, `${props?.region}b`],
-            natGateways: 0,
+            natGateways: 1,
             subnetConfiguration: [
                 {
                     cidrMask: 24,
                     name: 'ingress',
-                    subnetType: SubnetType.PUBLIC,
+                    subnetType: Ec2.SubnetType.PUBLIC,
                 },
                 {
                     cidrMask: 24,
                     name: 'application',
-                    subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+                    subnetType: Ec2.SubnetType.PRIVATE_WITH_EGRESS,
                 },
                 {
                     cidrMask: 28,
                     name: 'rds',
-                    subnetType: SubnetType.PRIVATE_ISOLATED,
+                    subnetType: Ec2.SubnetType.PRIVATE_ISOLATED,
                 }
             ],
+            gatewayEndpoints: {
+                S3: {
+                    service: Ec2.GatewayVpcEndpointAwsService.S3,
+                },
+            },
         });
+        const ingressSecGroup = new Ec2.SecurityGroup(this, 'IngressSecGroup', {
+            vpc: this.vpc,
+            securityGroupName: 'ingressSecGroup',
+            description: 'Security Group for Ingress',
+            allowAllOutbound: true,
+        });
+        ingressSecGroup.addIngressRule(Ec2.Peer.anyIpv4(), Ec2.Port.tcp(80), 'Allow HTTP traffic from internet');
+        ingressSecGroup.addIngressRule(Ec2.Peer.anyIpv4(), Ec2.Port.tcp(443), 'Allow HTTPS traffic from internet');
+        ingressSecGroup.addIngressRule(Ec2.Peer.anyIpv4(), Ec2.Port.tcp(22), 'Allow SSH traffic from internet');
 
-        this.s3Bucket = new Bucket(this, 's3bucket', {
+        const appSecGroup = new Ec2.SecurityGroup(this, 'AppSecGroup', {
+            vpc: this.vpc,
+            securityGroupName: 'appSecGroup',
+            description: 'Security Group for Application',
+            allowAllOutbound: true,
+            });
+        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(80), 'Allow HTTP traffic from Ingress SecGroup');
+        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(443), 'Allow HTTPS traffic from Ingress SecGroup');
+        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(22), 'Allow SSH traffic from Ingress SecGroup');
+
+        this.ingressSecGroup = ingressSecGroup;
+        this.appSecGroup = appSecGroup;
     }
 }

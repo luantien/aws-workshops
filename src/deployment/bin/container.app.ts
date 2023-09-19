@@ -8,15 +8,22 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const app = new App();
+const username = process.env.AWS_USERNAME || 'anonymous';
+
 new BeanstalkStack(app, 'beanstalk', {
+  stackName: `${username}-beanstalk-workshop`,
   env: { 
     account: process.env.AWS_ACCOUNT,
     region: process.env.AWS_REGION,
   },
-  owner: process.env.AWS_USERNAME || 'user',
+  owner: username,
+  minSize: 1,
+  maxSize: 1,
+  appKey: process.env.LARAVEL_APP_KEY || 'app_key',
 });
 
 new ECSStack(app, 'ecs', {
+  stackName: `${username}-ecs-workshop`,
   env: {
     account: process.env.AWS_ACCOUNT,
     region: process.env.AWS_REGION || 'ap-southeast-1',
@@ -24,6 +31,6 @@ new ECSStack(app, 'ecs', {
 });
 
 // Add tag for cleanup and cost control
-Tags.of(app).add('user:owner', process.env.AWS_USERNAME || 'user');
+Tags.of(app).add('user:owner', username);
 Tags.of(app).add('user:codinator', 'tiennpl');
 Tags.of(app).add('user:cost-center', 'workshop');
