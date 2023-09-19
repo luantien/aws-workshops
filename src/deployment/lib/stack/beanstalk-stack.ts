@@ -1,4 +1,4 @@
-import {CfnOutput, Stack, StackProps} from 'aws-cdk-lib';
+import { Stack, StackProps} from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
 import { Infrastructure } from '../common/infrastucture';
@@ -10,7 +10,6 @@ import * as Beanstalk from 'aws-cdk-lib/aws-elasticbeanstalk';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Role, CfnInstanceProfile, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
-import path = require('path');
 
 export interface BeanstalkStackProps extends StackProps {
     owner: string | undefined;
