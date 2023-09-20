@@ -1,6 +1,6 @@
 import { Construct } from "constructs";
 import { DatabaseInstance, IInstanceEngine, Credentials } from 'aws-cdk-lib/aws-rds';
-import { IVpc, InstanceType, SubnetType } from 'aws-cdk-lib/aws-ec2';
+import { ISecurityGroup, IVpc, InstanceType, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { RemovalPolicy } from "aws-cdk-lib";
 
@@ -11,6 +11,7 @@ export interface DatabaseProbs {
     engine: IInstanceEngine;
     instanceType: InstanceType;
     credential: Secret;
+    securityGroup: ISecurityGroup;
 }
 
 export class RdsDatabase extends Construct {
@@ -31,6 +32,7 @@ export class RdsDatabase extends Construct {
                 onePerAz: true,
                 subnetType: SubnetType.PRIVATE_ISOLATED,
             }),
+            securityGroups: [props.securityGroup],
             // Generate the secret with credentials from secret manager
             credentials: Credentials.fromSecret(props.credential),
             removalPolicy: RemovalPolicy.DESTROY,

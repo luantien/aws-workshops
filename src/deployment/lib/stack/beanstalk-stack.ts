@@ -28,19 +28,20 @@ export class BeanstalkStack extends Stack {
       username: props?.owner,
     });
     
-    // const dbCredential = new DbCredential(this, 'dbcredential', { username: 'postgres' });
-
-    
-    // const database = new RdsDatabase(this, 'rds', {
-    //     id: `rds-${props?.owner}`,
-    //     engine: DatabaseInstanceEngine.postgres({
-    //         version: PostgresEngineVersion.VER_14,
-    //     }),
-    //     instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO),
-    //     dbName: 'bookstore',
-    //     credential: dbCredential.credential,
-    //     vpc: infra.vpc!, // ! means that we are sure that vpc is not undefined
-    // });
+    const dbCredential = new DbCredential(this, 'dbcredential', { username: 'postgres' });
+    const dbName = 'bookstore';
+    // ! means that we are sure that resources is not undefined
+    const database = new RdsDatabase(this, 'rds', {
+        id: `rds-${props?.owner}`,
+        engine: DatabaseInstanceEngine.postgres({
+            version: PostgresEngineVersion.VER_14,
+        }),
+        instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO),
+        dbName: dbName,
+        credential: dbCredential.credential,
+        vpc: infra.vpc!,
+        securityGroup: infra.dbSecGroup!,
+    });
     
     const applicationName = `${props?.owner}-bookstore`;
 
@@ -48,7 +49,7 @@ export class BeanstalkStack extends Stack {
     const beanstalkApp = new Beanstalk.CfnApplication(this, 'BeanstalkApp', {
         applicationName: applicationName,
     });
-
+    
     const appZipAsset = new Asset(this, 'AppZipAsset', {
         path: '../store/artifacts/source.zip',
     });
@@ -156,46 +157,46 @@ export class BeanstalkStack extends Stack {
                 namespace: 'aws:elasticbeanstalk:application:environment',
                 optionName: 'APP_KEY',
                 value: props?.appKey,
+            },
+            {
+                namespace: 'aws:rds:dbinstance',
+                optionName: 'HasCoupledDatabase',
+                value: 'false',
+            },
+            {
+                namespace: 'aws:elasticbeanstalk:application:environment',
+                optionName: 'DB_CONNECTION',
+                value: 'postgres',
+            },
+            {
+                namespace: 'aws:elasticbeanstalk:application:environment',
+                optionName: 'DB_HOST',
+                value: database.instance.dbInstanceEndpointAddress,
+            },
+            {
+                namespace: 'aws:elasticbeanstalk:application:environment',
+                optionName: 'DB_DATABASE',
+                value: dbName,
+            },
+            {
+                namespace: 'aws:elasticbeanstalk:application:environment',
+                optionName: 'DB_USERNAME',
+                value: dbCredential.credential.secretValueFromJson('username').toString(),
+            },
+            {
+                namespace: 'aws:elasticbeanstalk:application:environment',
+                optionName: 'DB_PASSWORD',
+                value: dbCredential.credential.secretValueFromJson('password').toString(),
+            },
+            {
+                namespace: 'aws:elasticbeanstalk:application:environment',
+                optionName: 'DB_PORT',
+                value: database.instance.dbInstanceEndpointPort,
             }
-            // {
-            //     namespace: 'aws:rds:dbinstance',
-            //     optionName: 'HasCoupledDatabase',
-            //     value: 'false',
-            // },
-            // {
-            //     namespace: 'aws:elasticbeanstalk:application:environment',
-            //     optionName: 'AWS_SECRET_ID',
-            //     value: dbCredential.credential.secretArn,
-            // }
-
-            // {
-            //     namespace: 'aws:elasticbeanstalk:application:environment',
-            //     optionName: 'RDS_HOSTNAME',
-            //     value: database.instance.dbInstanceEndpointAddress,
-            // },
-            // {
-            //     namespace: 'aws:elasticbeanstalk:application:environment',
-            //     optionName: 'RDS_DB_NAME',
-            //     value: 'bookstore',
-            // },
-            // {
-            //     namespace: 'aws:elasticbeanstalk:application:environment',
-            //     optionName: 'RDS_USERNAME',
-            //     value: dbCredential.credential.secretValueFromJson('username').toString(),
-            // },
-            // {
-            //     namespace: 'aws:elasticbeanstalk:application:environment',
-            //     optionName: 'RDS_PASSWORD',
-            //     value: dbCredential.credential.secretValueFromJson('password').toString(),
-            // },
-            // {
-            //     namespace: 'aws:elasticbeanstalk:application:environment',
-            //     optionName: 'RDS_PORT',
-            //     value: '5432',
-            // }
         ],
-        // versionLabel: appVersion.ref,
+        versionLabel: appVersion.ref,
     });
 
+    environment.node.addDependency(database);
   }
 }

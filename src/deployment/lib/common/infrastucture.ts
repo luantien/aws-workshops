@@ -10,6 +10,7 @@ export class Infrastructure extends Construct {
     public readonly vpc: Ec2.IVpc | undefined;
     public readonly ingressSecGroup: Ec2.ISecurityGroup | undefined;
     public readonly appSecGroup: Ec2.ISecurityGroup | undefined;
+    public readonly dbSecGroup: Ec2.ISecurityGroup | undefined;
 
     constructor(scope: Construct, id: string, props?: InfrastructureProps) {
         super(scope, id);
@@ -58,11 +59,21 @@ export class Infrastructure extends Construct {
             description: 'Security Group for Application',
             allowAllOutbound: true,
             });
-        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(80), 'Allow HTTP traffic from Ingress SecGroup');
-        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(443), 'Allow HTTPS traffic from Ingress SecGroup');
-        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(22), 'Allow SSH traffic from Ingress SecGroup');
+        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(80), 'Allow HTTP traffic from Ingress Security Group');
+        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(443), 'Allow HTTPS traffic from Ingress Security Group');
+        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(22), 'Allow SSH traffic from Ingress Security Group');
+        
+        const dbSecGroup = new Ec2.SecurityGroup(this, 'DbSecGroup', {
+            vpc: this.vpc,
+            securityGroupName: 'dbSecGroup',
+            description: 'Security Group for Database',
+            allowAllOutbound: true,
+        });
+        dbSecGroup.addIngressRule(appSecGroup, Ec2.Port.tcp(3306), 'Allow TCP traffic from App Security Group to MySQL instance');
+        dbSecGroup.addIngressRule(appSecGroup, Ec2.Port.tcp(5432), 'Allow TCP traffic from App Security Group to Postgres instance');
 
         this.ingressSecGroup = ingressSecGroup;
         this.appSecGroup = appSecGroup;
+        this.dbSecGroup = dbSecGroup;
     }
 }
