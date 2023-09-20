@@ -43,6 +43,7 @@ export class RdsDatabase extends Construct {
 
 export interface CredentialProbs {
     username: string;
+    owner: string | undefined;
 }
 
 export class DbCredential extends Construct {
@@ -50,10 +51,11 @@ export class DbCredential extends Construct {
 
     constructor(scope: Construct, id: string, prop?: CredentialProbs) {
         super(scope, id);
+        const secretName = `${prop?.owner!}-db-credential`;
 
         this.credential = new Secret(this, 'secret',{
             description: 'Credential for DB',
-            secretName: 'db-credential',
+            secretName: secretName,
             generateSecretString: {
                 secretStringTemplate: JSON.stringify({ username: prop?.username || 'admin' }),
                 generateStringKey: 'password',

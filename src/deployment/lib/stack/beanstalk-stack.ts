@@ -28,7 +28,7 @@ export class BeanstalkStack extends Stack {
       username: props?.owner,
     });
     
-    const dbCredential = new DbCredential(this, 'dbcredential', { username: 'postgres' });
+    const dbCredential = new DbCredential(this, 'dbcredential', { username: 'postgres', owner: props?.owner });
     const dbName = 'bookstore';
     // ! means that we are sure that resources is not undefined
     const database = new RdsDatabase(this, 'rds', {
