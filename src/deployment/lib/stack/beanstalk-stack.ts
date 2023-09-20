@@ -51,7 +51,7 @@ export class BeanstalkStack extends Stack {
     });
     
     const appZipAsset = new Asset(this, 'AppZipAsset', {
-        path: '../store/artifacts/source.zip',
+        path: './artifacts/source.zip',
     });
 
     const appVersion = new Beanstalk.CfnApplicationVersion(this, 'AppVersion', {
@@ -83,7 +83,7 @@ export class BeanstalkStack extends Stack {
     const environment = new Beanstalk.CfnEnvironment(this, 'BeanstalkEnvironment', {
         environmentName: `${applicationName}-env`,
         applicationName: applicationName,
-        solutionStackName: '64bit Amazon Linux 2 v3.5.11 running PHP 8.1',
+        solutionStackName: '64bit Amazon Linux 2023 v4.0.1 running PHP 8.2',
         optionSettings: [
             {
                 namespace: 'aws:autoscaling:launchconfiguration',
@@ -166,7 +166,7 @@ export class BeanstalkStack extends Stack {
             {
                 namespace: 'aws:elasticbeanstalk:application:environment',
                 optionName: 'DB_CONNECTION',
-                value: 'postgres',
+                value: 'pgsql',
             },
             {
                 namespace: 'aws:elasticbeanstalk:application:environment',
@@ -181,12 +181,12 @@ export class BeanstalkStack extends Stack {
             {
                 namespace: 'aws:elasticbeanstalk:application:environment',
                 optionName: 'DB_USERNAME',
-                value: dbCredential.credential.secretValueFromJson('username').toString(),
+                value: dbCredential.credential.secretValueFromJson('username').unsafeUnwrap(),
             },
             {
                 namespace: 'aws:elasticbeanstalk:application:environment',
                 optionName: 'DB_PASSWORD',
-                value: dbCredential.credential.secretValueFromJson('password').toString(),
+                value: dbCredential.credential.secretValueFromJson('password').unsafeUnwrap(),
             },
             {
                 namespace: 'aws:elasticbeanstalk:application:environment',
