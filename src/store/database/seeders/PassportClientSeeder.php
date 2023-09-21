@@ -22,10 +22,10 @@ class PassportClientSeeder extends Seeder
             Artisan::call('passport:install',[
                 '--no-interaction' => true,
             ]);
-            Log::channel('stderr')->info('Passport client seeded successfully.');
+            Log::info('Passport client seeded successfully.');
         }
         else{
-            Log::channel('stderr')->info('Passport client already seeded.');
+            Log::info('Passport client already seeded.');
         }
     }
 }
