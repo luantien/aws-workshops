@@ -24,10 +24,14 @@ new BeanstalkStack(app, 'beanstalk', {
 
 new ECSStack(app, 'ecs', {
   stackName: `${username}-ecs-workshop`,
-  env: {
+  env: { 
     account: process.env.AWS_ACCOUNT,
-    region: process.env.AWS_REGION || 'ap-southeast-1',
+    region: process.env.AWS_REGION,
   },
+  owner: username,
+  minSize: 1,
+  maxSize: 1,
+  appKey: process.env.LARAVEL_APP_KEY || 'app_key',
 });
 
 // Add tag for cleanup and cost control
