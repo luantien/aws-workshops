@@ -23,8 +23,8 @@ export class ECSStack extends Stack {
 
         // Infrastructure Environment
         const infra = new Infrastructure(this, 'Infrastructure', {
-        region: props?.env?.region,
-        username: props?.owner,
+            region: props?.env?.region,
+            username: props?.owner,
         });
         
         // const dbCredential = new DbCredential(this, 'dbcredential', { username: 'postgres', owner: props?.owner });
@@ -44,21 +44,22 @@ export class ECSStack extends Stack {
 
         // ECS Cluster
         const cluster = new Cluster(this, 'Cluster', {
-        vpc: infra.vpc!,
+            vpc: infra.vpc!,
         });
 
         const autoScalingGroup = new AutoScalingGroup(this, 'ASG', {
-        vpc: infra.vpc!,
-        instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO),
-        machineImage: EcsOptimizedImage.amazonLinux2(),
-        minCapacity: props?.minSize,
-        desiredCapacity: props?.minSize,
-        maxCapacity: props?.maxSize,
-        securityGroup: infra.appSecGroup!,
+            vpc: infra.vpc!,
+            instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO),
+            machineImage: EcsOptimizedImage.amazonLinux2(),
+            minCapacity: props?.minSize,
+            desiredCapacity: props?.minSize,
+            maxCapacity: props?.maxSize,
+            securityGroup: infra.appSecGroup!,
         });
 
         const capacityProvider = new AsgCapacityProvider(this, 'AsgCapacityProvider', {
-        autoScalingGroup: autoScalingGroup
+            autoScalingGroup: autoScalingGroup,
+            enableManagedTerminationProtection: false,
         });
         cluster.addAsgCapacityProvider(capacityProvider);
 
