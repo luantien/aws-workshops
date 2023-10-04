@@ -12,4 +12,4 @@ RUN chmod -R ugo+rw storage && chmod -R ugo+rw bootstrap/cache
 
 EXPOSE 9000
 
-ENTRYPOINT ["/bin/sh", "-c", "docker-php-entrypoint php-fpm"]
+ENTRYPOINT ["/bin/sh", "-c", "php artisan migrate --seed --force && php artisan passport:keys --quiet && docker-php-entrypoint php-fpm"]

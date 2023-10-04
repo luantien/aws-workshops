@@ -23,24 +23,24 @@ export class ECSStack extends Stack {
 
         // Infrastructure Environment
         const infra = new Infrastructure(this, 'Infrastructure', {
-            region: props?.env?.region,
-            username: props?.owner,
+            region: props?.env?.region || 'ap-southeast-1',
+            username: props?.owner || 'anonymous',
         });
         
-        // const dbCredential = new DbCredential(this, 'dbcredential', { username: 'postgres', owner: props?.owner });
-        // const dbName = 'bookstore';
+        const dbCredential = new DbCredential(this, 'dbcredential', { username: 'postgres', owner: props?.owner });
+        const dbName = 'bookstore';
         // ! means that we are sure that resources is not undefined
-        // const database = new RdsDatabase(this, 'rds', {
-        //     id: `rds-${props?.owner}`,
-        //     engine: DatabaseInstanceEngine.postgres({
-        //         version: PostgresEngineVersion.VER_14,
-        //     }),
-        //     instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO),
-        //     dbName: dbName,
-        //     credential: dbCredential.credential,
-        //     vpc: infra.vpc!,
-        //     securityGroup: infra.dbSecGroup!,
-        // });
+        const database = new RdsDatabase(this, 'rds', {
+            id: `rds-${props?.owner}`,
+            engine: DatabaseInstanceEngine.postgres({
+                version: PostgresEngineVersion.VER_14,
+            }),
+            instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO),
+            dbName: dbName,
+            credential: dbCredential.credential,
+            vpc: infra.vpc!,
+            securityGroup: infra.dbSecGroup!,
+        });
 
         // ECS Cluster
         const cluster = new Cluster(this, 'Cluster', {
@@ -92,10 +92,11 @@ export class ECSStack extends Stack {
             memoryLimitMiB: 512,
             memoryReservationMiB: 256,
             environment: {
-                // DB_HOST: database.instance.dbInstanceEndpointAddress,
-                // DB_USER: dbCredential.credential.secretValueFromJson('username').unsafeUnwrap(),
-                // DB_PASSWORD: dbCredential.credential.secretValueFromJson('password').unsafeUnwrap(),
-                // DB_NAME: dbName,
+                DB_CONNECTION: 'pgsql',
+                DB_HOST: database.instance.dbInstanceEndpointAddress,
+                DB_DATABASE: dbName,
+                DB_USERNAME: dbCredential.credential.secretValueFromJson('username').unsafeUnwrap(),
+                DB_PASSWORD: dbCredential.credential.secretValueFromJson('password').unsafeUnwrap(),
                 APP_KEY: props?.appKey!,
             },
             essential: true,

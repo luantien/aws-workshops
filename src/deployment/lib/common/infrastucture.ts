@@ -2,23 +2,23 @@ import { Construct } from "constructs";
 import * as Ec2 from 'aws-cdk-lib/aws-ec2';
 
 export interface InfrastructureProps {
-    region: string | undefined;
-    username: string | undefined;
+    region: string;
+    username: string;
 }
 
 export class Infrastructure extends Construct {
-    public readonly vpc: Ec2.IVpc | undefined;
-    public readonly ingressSecGroup: Ec2.ISecurityGroup | undefined;
-    public readonly appSecGroup: Ec2.ISecurityGroup | undefined;
-    public readonly dbSecGroup: Ec2.ISecurityGroup | undefined;
+    public readonly vpc: Ec2.IVpc;
+    public readonly ingressSecGroup: Ec2.ISecurityGroup;
+    public readonly appSecGroup: Ec2.ISecurityGroup;
+    public readonly dbSecGroup: Ec2.ISecurityGroup;
 
-    constructor(scope: Construct, id: string, props?: InfrastructureProps) {
+    constructor(scope: Construct, id: string, props: InfrastructureProps) {
         super(scope, id);
 
         this.vpc = new Ec2.Vpc(this, 'Vpc', {
-            vpcName: `vpc-${props?.region}-${props?.username}-workshop`,
-            ipAddresses: Ec2.IpAddresses.cidr('10.16.0.0/16'),
-            availabilityZones: [`${props?.region}a`, `${props?.region}b`],
+            vpcName: `vpc-${props.region}-${props.username}-workshop`,
+            cidr: '10.16.0.0/16',
+            maxAzs: 2,
             natGateways: 1,
             subnetConfiguration: [
                 {
@@ -43,37 +43,34 @@ export class Infrastructure extends Construct {
                 },
             },
         });
-        const ingressSecGroup = new Ec2.SecurityGroup(this, 'IngressSecGroup', {
+
+        this.ingressSecGroup = new Ec2.SecurityGroup(this, 'IngressSecGroup', {
             vpc: this.vpc,
             securityGroupName: 'ingressSecGroup',
             description: 'Security Group for Ingress',
             allowAllOutbound: true,
         });
-        ingressSecGroup.addIngressRule(Ec2.Peer.anyIpv4(), Ec2.Port.tcp(80), 'Allow HTTP traffic from internet');
-        ingressSecGroup.addIngressRule(Ec2.Peer.anyIpv4(), Ec2.Port.tcp(443), 'Allow HTTPS traffic from internet');
-        ingressSecGroup.addIngressRule(Ec2.Peer.anyIpv4(), Ec2.Port.tcp(22), 'Allow SSH traffic from internet');
+        this.ingressSecGroup.addIngressRule(Ec2.Peer.anyIpv4(), Ec2.Port.tcp(80), 'Allow HTTP traffic from internet');
+        this.ingressSecGroup.addIngressRule(Ec2.Peer.anyIpv4(), Ec2.Port.tcp(443), 'Allow HTTPS traffic from internet');
+        this.ingressSecGroup.addIngressRule(Ec2.Peer.anyIpv4(), Ec2.Port.tcp(22), 'Allow SSH traffic from internet');
 
-        const appSecGroup = new Ec2.SecurityGroup(this, 'AppSecGroup', {
+        this.appSecGroup = new Ec2.SecurityGroup(this, 'AppSecGroup', {
             vpc: this.vpc,
             securityGroupName: 'appSecGroup',
             description: 'Security Group for Application',
             allowAllOutbound: true,
-            });
-        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(80), 'Allow HTTP traffic from Ingress Security Group');
-        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(443), 'Allow HTTPS traffic from Ingress Security Group');
-        appSecGroup.addIngressRule(ingressSecGroup, Ec2.Port.tcp(22), 'Allow SSH traffic from Ingress Security Group');
+        });
+        this.appSecGroup.addIngressRule(this.ingressSecGroup, Ec2.Port.tcp(80), 'Allow HTTP traffic from Ingress Security Group');
+        this.appSecGroup.addIngressRule(this.ingressSecGroup, Ec2.Port.tcp(443), 'Allow HTTPS traffic from Ingress Security Group');
+        this.appSecGroup.addIngressRule(this.ingressSecGroup, Ec2.Port.tcp(22), 'Allow SSH traffic from Ingress Security Group');
         
-        const dbSecGroup = new Ec2.SecurityGroup(this, 'DbSecGroup', {
+        this.dbSecGroup = new Ec2.SecurityGroup(this, 'DbSecGroup', {
             vpc: this.vpc,
             securityGroupName: 'dbSecGroup',
             description: 'Security Group for Database',
             allowAllOutbound: true,
         });
-        dbSecGroup.addIngressRule(appSecGroup, Ec2.Port.tcp(3306), 'Allow TCP traffic from App Security Group to MySQL instance');
-        dbSecGroup.addIngressRule(appSecGroup, Ec2.Port.tcp(5432), 'Allow TCP traffic from App Security Group to Postgres instance');
-
-        this.ingressSecGroup = ingressSecGroup;
-        this.appSecGroup = appSecGroup;
-        this.dbSecGroup = dbSecGroup;
+        this.dbSecGroup.addIngressRule(this.appSecGroup, Ec2.Port.tcp(3306), 'Allow TCP traffic from App Security Group to MySQL instance');
+        this.dbSecGroup.addIngressRule(this.appSecGroup, Ec2.Port.tcp(5432), 'Allow TCP traffic from App Security Group to Postgres instance');
     }
 }
