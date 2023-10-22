@@ -9,3 +9,5 @@ cdk.out
 
 # Local environment variables
 .env
+src/.venv
+src/packages

@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./workshop-2/src/lib/python"
+    ]
+}
