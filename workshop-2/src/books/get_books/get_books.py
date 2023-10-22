@@ -2,6 +2,7 @@ import os, logging, json, sys
 from aws_xray_sdk.core import xray_recorder, patch_all
 import common.dynamodb as db
 import common.book_mappers as mappers
+from common.error_handler import error_handler
 
 
 logger = logging.getLogger()
@@ -12,7 +13,7 @@ lambda_env = os.getenv('LAMBDA_ENV', 'prod')
 db_config = db.get_dynamodb_config()
 db_client = db.dynamodb_client(env=lambda_env, logger=logger)
 
-
+@error_handler
 def handler(event, context):
     query_params = event['queryStringParameters']
     logger.info('Query params: %s', query_params)
@@ -28,10 +29,12 @@ def handler(event, context):
                     'AttributeValueList': [{ 'S': query_params['value'] }],
                     'ComparisonOperator': 'EQ'
                 },
+            },
+            QueryFilter={
                 'EntityType': {
                     'AttributeValueList': [{ 'S': 'book' }],
                     'ComparisonOperator': 'EQ'
-                }
+                },
             }
         )
     else:
