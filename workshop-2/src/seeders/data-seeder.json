@@ -1,0 +1,112 @@
+{
+    "Books": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "a#1"},
+                    "SK": {"S": "a#1"},
+                    "EntityType": {"S": "author"},
+                    "Name": {"S": "Author 1"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "a#2"},
+                    "SK": {"S": "a#2"},
+                    "EntityType": {"S": "author"},
+                    "Name": {"S": "Author 2"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "a#3"},
+                    "SK": {"S": "a#3"},
+                    "EntityType": {"S": "author"},
+                    "Name": {"S": "Author 3"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "b#1"},
+                    "SK": {"S": "b#1"},
+                    "EntityType": {"S": "book"},
+                    "Title": {"S": "Book 1"},
+                    "Description": {"S": "Description 1"},
+                    "Author": {"S": "a#1"},
+                    "PublishedDate": {"S": "2018-01-01"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "b#2"},
+                    "SK": {"S": "b#2"},
+                    "EntityType": {"S": "book"},
+                    "Title": {"S": "Book 2"},
+                    "Description": {"S": "Description 2"},
+                    "Author": {"S": "a#1"},
+                    "PublishedDate": {"S": "2019-08-01"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "b#3"},
+                    "SK": {"S": "b#3"},
+                    "EntityType": {"S": "book"},
+                    "Title": {"S": "Book 3"},
+                    "Description": {"S": "Description 3"},
+                    "Author": {"S": "a#2"},
+                    "PublishedDate": {"S": "2018-05-22"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "b#4"},
+                    "SK": {"S": "b#4"},
+                    "EntityType": {"S": "book"},
+                    "Title": {"S": "Book 4"},
+                    "Description": {"S": "Description 4"},
+                    "Author": {"S": "a#2"},
+                    "PublishedDate": {"S": "2021-07-20"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "b#5"},
+                    "SK": {"S": "b#5"},
+                    "EntityType": {"S": "book"},
+                    "Title": {"S": "Book 5"},
+                    "Description": {"S": "Description 5"},
+                    "Author": {"S": "a#3"},
+                    "PublishedDate": {"S": "2018-11-04"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "b#6"},
+                    "SK": {"S": "b#6"},
+                    "EntityType": {"S": "book"},
+                    "Title": {"S": "Book 6"},
+                    "Description": {"S": "Description 6"},
+                    "Author": {"S": "a#3"},
+                    "PublishedDate": {"S": "2020-09-03"}
+                }
+            }
+        }
+    ]
+}

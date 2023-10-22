@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { WorkshopStack } from '../lib/integration-workshop.stack';
+import { MainStack } from '../lib/main.stack';
 import * as dotenv from 'dotenv';
 
 const app = new cdk.App();
 const username = process.env.AWS_USERNAME || 'anonymous';
 
 
-new WorkshopStack(app, 'IntegrationWorkshopStack', {
-    stackName: `${username}-integration-workshop`,
+new MainStack(app, 'iws-main-stack', {
+    stackName: `${username}-Integration-Workshop`,
+    description: 'AWS Integration Workshop with EventBridge, SQS, SNS, and StepFunctions',
     env: { 
         account: process.env.AWS_ACCOUNT,
         region: process.env.AWS_REGION,
