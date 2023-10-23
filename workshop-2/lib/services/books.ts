@@ -279,7 +279,7 @@ export class BooksService extends Construct {
             );
         const workflowStateMachine = new sfn.StateMachine(this, 'ReviewStateMachine', {
             stateMachineName: 'ReviewSentimentAnalysis',
-            definition: workflowDefinition,
+            definitionBody: sfn.DefinitionBody.fromChainable(workflowDefinition),
             stateMachineType: sfn.StateMachineType.EXPRESS,
             timeout: cdk.Duration.seconds(300),
             tracingEnabled: true,
@@ -318,19 +318,24 @@ export class BooksService extends Construct {
                         'integration.request.header.Content-Type': "'application/json'",
                     },
                     requestTemplates: {
-                        'application/json': JSON.stringify({
-                            input: `$util.escapeJavaScript($input.json('$'))`,
-                            stateMachineArn: workflowStateMachine.stateMachineArn,
-                        }),
+                        'application/json': `
+                            #set($inputRoot = $util.escapeJavaScript($input.json('$')))
+                            #set($inputRoot.bookId = $input.params('bookId'))
+                            {
+                                "input": $inputRoot,
+                                "stateMachineArn": "${workflowStateMachine.stateMachineArn}"
+                            }`,
                     },
                     integrationResponses: [
                         {
                             'statusCode': '200',
                             'responseTemplates': {
-                                'application/json': JSON.stringify({
-                                    'message': 'Review submitted successfully',
-                                    'reviewId': '$.reviewId.Payload',
-                                }),
+                                'application/json': `
+                                    #set($inputRoot = $input.path('$'))
+                                    {
+                                        "message": "Review submitted successfully",
+                                        "reviewId": $inputRoot.reviewId
+                                    }`,
                             },
                         }
                     ]
