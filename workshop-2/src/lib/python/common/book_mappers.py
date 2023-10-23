@@ -13,3 +13,12 @@ def mapBookDetail(item):
         'author': item["Author"]['S'],
         'publishedData': item["PublishedDate"]['S'],
     }
+
+def mapBookReview(item):
+    return {
+        'id': item['SK']['S'],
+        'bookId': item['PK']['S'],
+        'reviewer': item['Reviewer']['S'],
+        'message': item['Message']['S'],
+        'rating': item['Sentiment']['S'] if 'Sentiment' in item else 'N/A',
+    }
