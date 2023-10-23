@@ -1,4 +1,4 @@
-import os, logging, json, urllib, sys
+import os, logging, json, urllib
 from aws_xray_sdk.core import xray_recorder, patch_all
 import common.dynamodb as db
 import common.book_mappers as mappers

@@ -1,5 +1,6 @@
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 
 export interface LambdaHandlerProps {
@@ -10,6 +11,7 @@ export interface LambdaHandlerProps {
     memorySize?: number;
     environment?: { [key: string]: string };
     layers?: lambda.ILayerVersion[];
+    policies?: iam.PolicyStatement[];
 }
 
 export class LambdaHandler extends Construct {
@@ -28,5 +30,10 @@ export class LambdaHandler extends Construct {
             tracing: lambda.Tracing.ACTIVE,
             layers: props.layers ?? [],
         });
+        if (props.policies) {
+            props.policies.forEach((policy) => {
+                this.function.addToRolePolicy(policy);
+            });
+        }
     }
 }

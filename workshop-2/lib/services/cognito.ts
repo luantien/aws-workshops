@@ -1,6 +1,6 @@
-import { CfnOutput, NestedStack, NestedStackProps, RemovalPolicy } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy } from "aws-cdk-lib";
 import { Construct } from "constructs";
-import * as Cognito from "aws-cdk-lib/aws-cognito";
+import * as cognito from "aws-cdk-lib/aws-cognito";
 
 
 export interface UserPoolClientProps {
@@ -17,17 +17,17 @@ export interface CognitoServiceProps {
 
 export class CognitoService extends Construct {
     public readonly userPoolName: string;
-    public readonly userPoolDomain: Cognito.UserPoolDomain;
+    public readonly userPoolDomain: cognito.UserPoolDomain;
     public readonly region: string;
 
-    public readonly userPool: Cognito.UserPool;
+    public readonly userPool: cognito.UserPool;
 
     constructor(scope: Construct, id: string, props: CognitoServiceProps) {
         super(scope, id);
 
         this.userPoolName = props.userPoolName ?? 'SampleUserPool';
         this.region = props.region ?? 'ap-southeast-1';
-        this.userPool = new Cognito.UserPool(this, 'UserPool', {
+        this.userPool = new cognito.UserPool(this, 'UserPool', {
             userPoolName: this.userPoolName,
             removalPolicy: RemovalPolicy.DESTROY,
             selfSignUpEnabled: true,
@@ -59,13 +59,13 @@ export class CognitoService extends Construct {
         });
     }
 
-    public addNewClient(client: UserPoolClientProps): Cognito.UserPoolClient {
+    public addNewClient(client: UserPoolClientProps): cognito.UserPoolClient {
         return this.userPool.addClient(`${client.name}UserPoolClient`, {
             oAuth: {
                 flows: {
                     authorizationCodeGrant: true,
                 },
-                scopes: [Cognito.OAuthScope.OPENID],
+                scopes: [cognito.OAuthScope.OPENID],
                 callbackUrls: client.callbackUrls,
                 logoutUrls: client.logoutUrls,
             }
