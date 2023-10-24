@@ -14,8 +14,6 @@ import { DynamoDb } from "../templates/dynamodb";
 import { CognitoService } from "./cognito";
 
 
-
-
 export interface BooksServiceProps {
     owner: string;
     cognito: CognitoService | undefined;
@@ -68,7 +66,7 @@ export class BooksService extends Construct {
 
         // Lambda Runtime Dependencies construction
         const lambdaOptions = {
-            lambdaEnv: {
+            environment: {
                 LAMBDA_ENV: process.env.LAMBDA_ENV ?? 'prod',
                 DYNAMODB_ENDPOINT: process.env.DYNAMODB_ENDPOINT ?? '',
                 DYNAMODB_TABLE: this.dynamodb.table.tableName,
