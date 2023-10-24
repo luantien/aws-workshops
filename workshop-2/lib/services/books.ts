@@ -8,18 +8,16 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { UserPoolClient } from "aws-cdk-lib/aws-cognito";
 // Common Resource Templates
-import { LambdaHandler } from "../templates/lambda-handler";
+import { LambdaHandler, LambdaFunctionProps } from "../templates/lambda-handler";
 import { DynamoDb } from "../templates/dynamodb";
 // Dependencies
 import { CognitoService } from "./cognito";
 
 
-export interface LambdaFunctionProps {
-    lambdaEnv: { [key: string]: string };
-    layers?: lambda.ILayerVersion[];
-}
+
 
 export interface BooksServiceProps {
+    owner: string;
     cognito: CognitoService | undefined;
 }
 
@@ -44,7 +42,7 @@ export class BooksService extends Construct {
 
         // Setup DynamoDB
         this.dynamodb = new DynamoDb(this, 'BooksTable', {
-            tableName: 'Books',
+            tableName: `${props.owner}Books`,
             readCapacity: 5,
             writeCapacity: 5,
             billingMode: DynamoDb.BillingMode.PROVISIONED,
@@ -127,17 +125,14 @@ export class BooksService extends Construct {
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/books/get_books'),
                 handler: 'get_books.handler',
-                environment: lambdaOptions.lambdaEnv,
-                layers: lambdaOptions.layers,
-                
+                options: lambdaOptions,
             }),
             getBookDetail: new LambdaHandler(this, 'GetBookDetailHandler', {
                 name: 'GetBookDetailFunction',
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/books/get_book_detail'),
                 handler: 'get_book_detail.handler',
-                environment: lambdaOptions.lambdaEnv,
-                layers: lambdaOptions.layers,
+                options: lambdaOptions,
             }),
         };
         // Generate Book Resources
@@ -183,16 +178,14 @@ export class BooksService extends Construct {
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/reviews/get_reviews'),
                 handler: 'get_reviews.handler',
-                environment: lambdaOptions.lambdaEnv,
-                layers: lambdaOptions.layers,
+                options: lambdaOptions,
             }),
             detectSentiment: new LambdaHandler(this, 'DetectSentimentHandler', {
                 name: 'DetectSentimentFunction',
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/reviews/detect_sentiment'),
                 handler: 'detect_sentiment.handler',
-                environment: lambdaOptions.lambdaEnv,
-                layers: lambdaOptions.layers,
+                options: lambdaOptions,
                 policies: [
                     new iam.PolicyStatement({
                         effect: iam.Effect.ALLOW,
@@ -206,19 +199,20 @@ export class BooksService extends Construct {
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/reviews/generate_review_id'),
                 handler: 'generate_review_id.handler',
-                environment: lambdaOptions.lambdaEnv,
-                layers: lambdaOptions.layers,  
+                options: lambdaOptions,
             }),
             notifyNegativeReview: new LambdaHandler(this, 'NotifyNegativeReviewHandler', {
                 name: 'NotifyNegativeReviewFunction',
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/reviews/notify_negative_review'),
                 handler: 'notify_negative_review.handler',
-                environment: {
-                    SNS_EMAIL_FROM: process.env.SNS_EMAIL_FROM ?? '',
-                    SNS_EMAIL_TO: process.env.SNS_EMAIL_TO ?? '',
+                options: {
+                    environment: {
+                        SNS_EMAIL_FROM: process.env.SNS_EMAIL_FROM ?? '',
+                        SNS_EMAIL_TO: process.env.SNS_EMAIL_TO ?? '',
+                    },
+                    layers: lambdaOptions.layers,
                 },
-                layers: lambdaOptions.layers,
                 policies: [
                     new iam.PolicyStatement({
                         effect: iam.Effect.ALLOW,

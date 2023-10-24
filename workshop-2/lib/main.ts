@@ -24,6 +24,7 @@ export class MainStack extends cdk.Stack {
         // Book REST APIs
         const bookService = new BooksService(this, 'BookService', {
             cognito: cognito,
+            owner: props.owner,
         });
         cdk.Tags.of(bookService).add('name', `${props.owner ?? 'anonymous'}-books-service`);
         cdk.Tags.of(bookService).add('description', `Books Rest APIs created by ${props.owner ?? 'anonymous'}`);
