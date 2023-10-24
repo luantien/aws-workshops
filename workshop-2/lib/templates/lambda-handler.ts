@@ -3,8 +3,8 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
 
 export interface LambdaFunctionProps {
-    environment?: { [key: string]: string };
-    layers?: lambda.ILayerVersion[];
+    environment: { [key: string]: string };
+    layers: lambda.ILayerVersion[];
 }
 
 export interface LambdaHandlerProps {
