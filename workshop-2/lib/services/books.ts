@@ -20,6 +20,7 @@ export interface BooksServiceProps {
 }
 
 export class BooksService extends Construct {
+    private readonly owner: string;
     private readonly dynamodb: DynamoDb;
     private readonly gateway: agw.RestApi;
     private readonly userPoolClient: UserPoolClient;
@@ -28,6 +29,7 @@ export class BooksService extends Construct {
 
     constructor(scope: Construct, id: string, props: BooksServiceProps) {
         super(scope, id);
+        this.owner = props.owner;
 
         // Setup Cognito Authorizer
         let authorizer = undefined;
@@ -222,56 +224,44 @@ export class BooksService extends Construct {
         };
 
 
-        const workflowDefinition = sfn.Chain
-            .start(
-                new tasks.LambdaInvoke(this, 'DetectSentiment', 
-                    {
-                        lambdaFunction: handlers.detectSentiment.function,
-                        resultPath: '$.sentiment',
-                    }
-                )
-            )
-            .next(
-                new tasks.LambdaInvoke(this, 'GenerateReviewId', 
-                    {
-                        lambdaFunction: handlers.generateReviewId.function,
-                        resultPath: '$.reviewId',
-                    }
-                )
-            )
-            .next(
-                new tasks.DynamoPutItem(this, 'PutReviewToDynamo', 
-                    {
-                        table: this.dynamodb.table,
-                        item: {
-                            PK: tasks.DynamoAttributeValue.fromString(sfn.JsonPath.stringAt('$.bookId')),
-                            SK: tasks.DynamoAttributeValue.fromString(sfn.JsonPath.stringAt('$.reviewId.Payload')),
-                            EntityType: tasks.DynamoAttributeValue.fromString('review'),
-                            Reviewer: tasks.DynamoAttributeValue.fromString(sfn.JsonPath.stringAt('$.reviewer')),
-                            Message: tasks.DynamoAttributeValue.fromString(sfn.JsonPath.stringAt('$.message')),
-                            Sentiment: tasks.DynamoAttributeValue.fromString(sfn.JsonPath.stringAt('$.sentiment.Payload.Sentiment')),
-                        },
+        const workflowDefinition = sfn.Chain.start(
+                new tasks.LambdaInvoke(this, 'DetectSentiment', {
+                lambdaFunction: handlers.detectSentiment.function,
+                resultPath: '$.sentiment',
+            }))
+            .next(new tasks.LambdaInvoke(this, 'GenerateReviewId', {
+                lambdaFunction: handlers.generateReviewId.function,
+                resultPath: '$.reviewId',
+            }))
+            .next(new tasks.DynamoPutItem(this, 'PutReviewToDynamo', {
+                table: this.dynamodb.table,
+                item: {
+                    PK: tasks.DynamoAttributeValue.fromString(sfn.JsonPath.stringAt('$.bookId')),
+                    SK: tasks.DynamoAttributeValue.fromString(sfn.JsonPath.stringAt('$.reviewId.Payload')),
+                    EntityType: tasks.DynamoAttributeValue.fromString('review'),
+                    Reviewer: tasks.DynamoAttributeValue.fromString(sfn.JsonPath.stringAt('$.reviewer')),
+                    Message: tasks.DynamoAttributeValue.fromString(sfn.JsonPath.stringAt('$.message')),
+                    Sentiment: tasks.DynamoAttributeValue.fromString(sfn.JsonPath.stringAt('$.sentiment.Payload.Sentiment')),
+                },
+                resultPath: sfn.JsonPath.DISCARD,
+            }))
+            .next(new sfn.Choice(this, 'IsNegativeReview?')
+                .when(sfn.Condition.stringEquals(
+                        sfn.JsonPath.stringAt('$.sentiment.Payload.Sentiment'),
+                        'NEGATIVE',
+                    ),
+                    new tasks.LambdaInvoke(this, 'NotifyNegativeReview', {
+                        lambdaFunction: handlers.notifyNegativeReview.function,
                         resultPath: sfn.JsonPath.DISCARD,
-                    }
+                    })  
                 )
-            )
-            .next(
-                new sfn.Choice(this, 'IsNegativeReview?')
-                    .when(
-                        sfn.Condition.stringEquals(
-                            sfn.JsonPath.stringAt('$.sentiment.Payload.Sentiment'),
-                            'NEGATIVE',
-                        ),
-                        new tasks.LambdaInvoke(this, 'NotifyNegativeReview', {
-                            lambdaFunction: handlers.notifyNegativeReview.function,
-                            resultPath: sfn.JsonPath.DISCARD,
-                        })  
-                )
-                    .otherwise(new sfn.Succeed(this, 'PositiveReview'))
+                .otherwise(new sfn.Succeed(this, 'PositiveReview'))
             );
+        
         const workflowStateMachine = new sfn.StateMachine(this, 'ReviewStateMachine', {
-            stateMachineName: 'ReviewSentimentAnalysis',
+            stateMachineName: `${this.owner}ReviewSentimentAnalysis`,
             definitionBody: sfn.DefinitionBody.fromChainable(workflowDefinition),
+
             stateMachineType: sfn.StateMachineType.EXPRESS,
             timeout: cdk.Duration.seconds(300),
             tracingEnabled: true,
@@ -311,10 +301,10 @@ export class BooksService extends Construct {
                     },
                     requestTemplates: {
                         'application/json': `
-                            #set($inputRoot = $util.escapeJavaScript($input.json('$')))
-                            #set($inputRoot.bookId = $input.params('bookId'))
+                            #set($inputRoot = $input.path('$'))
+                            #set($inputRoot.bookId = "$input.params('bookId')")
                             {
-                                "input": $inputRoot,
+                                "input": "$util.escapeJavaScript($input.json('$'))",
                                 "stateMachineArn": "${workflowStateMachine.stateMachineArn}"
                             }`,
                     },
@@ -323,16 +313,22 @@ export class BooksService extends Construct {
                             'statusCode': '200',
                             'responseTemplates': {
                                 'application/json': `
-                                    #set($inputRoot = $input.path('$'))
+                                    #set($output = $util.parseJson($input.path('$.output')))
                                     {
                                         "message": "Review submitted successfully",
-                                        "reviewId": $inputRoot.reviewId
+                                        "reviewId": "$output.reviewId.Payload"
                                     }`,
                             },
                         }
                     ]
                 }
-            )
+            ),
+            {
+                authorizer: authorizer,
+                authorizationType: authorizer 
+                    ? agw.AuthorizationType.COGNITO 
+                    : agw.AuthorizationType.NONE,
+            }
         );
 
         // Allow this StepFunction StateMachine to write to DynamoDB
