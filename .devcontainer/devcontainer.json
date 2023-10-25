@@ -3,7 +3,10 @@
 {
 	"name": "lamp-dev-container",
 	
-	"image": "public.ecr.aws/k0n3v4i4/lamp/dev-container:latest",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": { }
+	},
 
 	"features": {
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
