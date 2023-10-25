@@ -269,6 +269,7 @@ export class BooksService extends Construct {
                 destination: new logs.LogGroup(this, 'ReviewSentimentAnalysisLogGroup', {
                     retention: logs.RetentionDays.ONE_WEEK,
                 }),
+                level: sfn.LogLevel.ALL,
             },
         });
         // Generate Review Resources
@@ -302,7 +303,7 @@ export class BooksService extends Construct {
                     requestTemplates: {
                         'application/json': `
                             #set($inputRoot = $input.path('$'))
-                            #set($inputRoot.bookId = "$input.params('bookId')")
+                            #set($inputRoot.bookId = "$util.urlDecode($input.params('bookId'))")
                             {
                                 "input": "$util.escapeJavaScript($input.json('$'))",
                                 "stateMachineArn": "${workflowStateMachine.stateMachineArn}"
