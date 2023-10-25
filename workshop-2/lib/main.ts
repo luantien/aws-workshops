@@ -13,20 +13,21 @@ export class MainStack extends cdk.Stack {
         super(scope, id, props);
 
         // Cognito Service (IdP)
-        const cognito = new CognitoService(this, 'CognitoService', {
-            userPoolName: 'WorkshopUserPool',
-            domainPrefix: `${process.env.AWS_USERNAME ?? Date.now()}-user-pool`,
-            region: process.env.AWS_REGION ?? 'ap-southeast-1',
-        });
-        cdk.Tags.of(cognito).add('name', `${props.owner ?? 'anonymous'}-cognito-service`);
-        cdk.Tags.of(cognito).add('description', `Cognito Service created by ${props.owner ?? 'anonymous'}`);
+        // const cognito = new CognitoService(this, 'CognitoService', {
+        //     userPoolName: 'WorkshopUserPool',
+        //     domainPrefix: `${process.env.AWS_USERNAME ?? Date.now()}-user-pool`,
+        //     region: process.env.AWS_REGION ?? 'ap-southeast-1',
+        // });
+        // cdk.Tags.of(cognito).add('name', `${props.owner ?? 'anonymous'}-cognito-service`);
+        // cdk.Tags.of(cognito).add('description', `Cognito Service created by ${props.owner ?? 'anonymous'}`);
 
         // Book REST APIs
-        const bookService = new BooksService(this, 'BookService', {
-            cognito: cognito,
-            owner: props.owner,
-        });
-        cdk.Tags.of(bookService).add('name', `${props.owner ?? 'anonymous'}-books-service`);
-        cdk.Tags.of(bookService).add('description', `Books Rest APIs created by ${props.owner ?? 'anonymous'}`);
+        // const bookService = new BooksService(this, 'BookService', {
+        //     cognito: cognito,
+        //     owner: props.owner,
+        // });
+        // cdk.Tags.of(bookService).add('name', `${props.owner ?? 'anonymous'}-books-service`);
+        // cdk.Tags.of(bookService).add('description', `Books Rest APIs created by ${props.owner ?? 'anonymous'}`);
+
     }
 }

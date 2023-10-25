@@ -46,7 +46,7 @@ export class BooksService extends Construct {
             readCapacity: 5,
             writeCapacity: 5,
             billingMode: DynamoDb.BillingMode.PROVISIONED,
-            autoScaling: true,
+            autoScaling: false,
             maxCapacity: 50,
             globalSecondaryIndexes: [
                 {
@@ -109,7 +109,7 @@ export class BooksService extends Construct {
         }
         this.provisionBookResources(lambdaOptions, authorizer);
 
-        this.provisionReviewResources(lambdaOptions, authorizer);
+        // this.provisionReviewResources(lambdaOptions, authorizer);
         
         this.generateCfnOutput();
     }
