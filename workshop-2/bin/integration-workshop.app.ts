@@ -17,3 +17,6 @@ new MainStack(app, 'iws-main-stack', {
     },
     owner: username,
 });
+cdk.Tags.of(app).add('user:owner', username);
+cdk.Tags.of(app).add('user:codinator', 'tiennguyen');
+cdk.Tags.of(app).add('user:cost-center', 'aws-workshop');
