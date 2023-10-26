@@ -1,0 +1,395 @@
+{
+	"info": {
+		"_postman_id": "e9f4c83e-3a77-42fd-99f0-558b64b9346f",
+		"name": "AWS Workshop - Integration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5104465"
+	},
+	"item": [
+		{
+			"name": "Books",
+			"item": [
+				{
+					"name": "Get Books",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
+									"key": "tokenName",
+									"value": "Congito",
+									"type": "string"
+								},
+								{
+									"key": "refreshRequestParams",
+									"value": [
+										{
+											"key": "client_id",
+											"value": "{{BOOK_API_USERPOOL_CLIENT}}",
+											"enabled": true,
+											"send_as": "request_body"
+										},
+										{
+											"key": "grant_type",
+											"value": "refresh_token",
+											"enabled": false,
+											"send_as": "request_body"
+										},
+										{
+											"key": "scope",
+											"value": "openid",
+											"enabled": false,
+											"send_as": "request_body"
+										}
+									],
+									"type": "any"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "{{COGNITO_DOMAIN}}/oauth2/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
+									"type": "string"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "challengeAlgorithm",
+									"value": "S256",
+									"type": "string"
+								},
+								{
+									"key": "client_authentication",
+									"value": "body",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "openid",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BOOK_API_DOMAIN}}/books?filter=Author&value=a%232",
+							"host": [
+								"{{BOOK_API_DOMAIN}}"
+							],
+							"path": [
+								"books"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "Author"
+								},
+								{
+									"key": "value",
+									"value": "a#2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Book Detail",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "accessTokenUrl",
+									"value": "{{COGNITO_DOMAIN}}/oauth2/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
+									"type": "string"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "challengeAlgorithm",
+									"value": "S256",
+									"type": "string"
+								},
+								{
+									"key": "tokenName",
+									"value": "id_token",
+									"type": "string"
+								},
+								{
+									"key": "client_authentication",
+									"value": "body",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "openid",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BOOK_API_DOMAIN}}/books/{{BOOK_ID}}",
+							"host": [
+								"{{BOOK_API_DOMAIN}}"
+							],
+							"path": [
+								"books",
+								"{{BOOK_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post Book Review",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "accessTokenUrl",
+									"value": "{{COGNITO_DOMAIN}}/oauth2/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
+									"type": "string"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "challengeAlgorithm",
+									"value": "S256",
+									"type": "string"
+								},
+								{
+									"key": "tokenName",
+									"value": "id_token",
+									"type": "string"
+								},
+								{
+									"key": "client_authentication",
+									"value": "body",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "openid",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"reviewer\": \"Sample User 1\",\r\n    \"message\": \"This book is great!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BOOK_API_DOMAIN}}/books/{{BOOK_ID}}/reviews",
+							"host": [
+								"{{BOOK_API_DOMAIN}}"
+							],
+							"path": [
+								"books",
+								"{{BOOK_ID}}",
+								"reviews"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Book Reviews",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "accessTokenUrl",
+									"value": "{{COGNITO_DOMAIN}}/oauth2/token",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
+									"type": "string"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "challengeAlgorithm",
+									"value": "S256",
+									"type": "string"
+								},
+								{
+									"key": "tokenName",
+									"value": "id_token",
+									"type": "string"
+								},
+								{
+									"key": "client_authentication",
+									"value": "body",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "openid",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BOOK_API_DOMAIN}}/books/{{BOOK_ID}}/reviews",
+							"host": [
+								"{{BOOK_API_DOMAIN}}"
+							],
+							"path": [
+								"books",
+								"{{BOOK_ID}}",
+								"reviews"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
