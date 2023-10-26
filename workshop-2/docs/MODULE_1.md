@@ -38,7 +38,10 @@ this.provisionBookResources(lambdaOptions, authorizer);
 # Deploy Book Services with CDK
 cdk deploy --profile ${AWS_USERNAME}
 ```
-
+- Run Data Seeder for DynamoDB Books Table
+```bash
+aws dynamodb batch-write-item --profile ${AWS_USERNAME} --request-items file://./src/seeders/data-seeder.json
+```
 ## Part 2: Review Component
 - **Uncomment** provision step for Review resource in lib/services/books.ts (line 112).
 ```typescript
