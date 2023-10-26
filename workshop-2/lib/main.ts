@@ -15,7 +15,7 @@ export class MainStack extends cdk.Stack {
         // Cognito Service (IdP)
         // const cognito = new CognitoService(this, 'CognitoService', {
         //     userPoolName: `${props.owner}WorkshopUserPool`,
-        //     domainPrefix: `${process.env.AWS_USERNAME ?? Date.now()}-user-pool`,
+        //     domainPrefix: `${props.owner}-user-pool`,
         //     region: process.env.AWS_REGION ?? 'ap-southeast-1',
         // });
         // cdk.Tags.of(cognito).add('name', `${props.owner ?? 'anonymous'}-cognito-service`);

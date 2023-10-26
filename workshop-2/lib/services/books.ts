@@ -89,7 +89,7 @@ export class BooksService extends Construct {
 
         // Setup API Gateway
         this.gateway = new agw.RestApi(this, 'BooksApi', {
-            restApiName: 'BooksApi',
+            restApiName: `${props.owner}BooksApi`,
             description: 'Books API',
             cloudWatchRole: true,
             deployOptions: {
@@ -102,7 +102,7 @@ export class BooksService extends Construct {
 
         if (props.cognito !== undefined) {
             this.userPoolClient = props.cognito.addNewClient({
-                name: 'BookApiClient',
+                name: `${props.owner}BookApiClient`,
                 callbackUrls: ['https://localhost'],
                 logoutUrls: ['https://localhost'],
             });
@@ -121,14 +121,14 @@ export class BooksService extends Construct {
         // Lambda Handlers constructions
         const handlers = {
             getBooks: new LambdaHandler(this, 'GetBooksHandler', {
-                name: 'GetBooksFunction',
+                name: `${this.owner}GetBooksFunction`,
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/books/get_books'),
                 handler: 'get_books.handler',
                 options: lambdaOptions,
             }),
             getBookDetail: new LambdaHandler(this, 'GetBookDetailHandler', {
-                name: 'GetBookDetailFunction',
+                name: `${this.owner}GetBookDetailFunction`,
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/books/get_book_detail'),
                 handler: 'get_book_detail.handler',
@@ -174,14 +174,14 @@ export class BooksService extends Construct {
         // Lambda Handlers constructions
         const handlers = {
             getReviews: new LambdaHandler(this, 'GetBookReviewsHandler', {
-                name: 'GetBookReviewsFunction',
+                name: `${this.owner}GetBookReviewsFunction`,
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/reviews/get_reviews'),
                 handler: 'get_reviews.handler',
                 options: lambdaOptions,
             }),
             detectSentiment: new LambdaHandler(this, 'DetectSentimentHandler', {
-                name: 'DetectSentimentFunction',
+                name: `${this.owner}DetectSentimentFunction`,
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/reviews/detect_sentiment'),
                 handler: 'detect_sentiment.handler',
@@ -195,14 +195,14 @@ export class BooksService extends Construct {
                 ],
             }),
             generateReviewId: new LambdaHandler(this, 'GenerateReviewIdHandler', {
-                name: 'GenerateReviewIdFunction',
+                name: `${this.owner}GenerateReviewIdFunction`,
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/reviews/generate_review_id'),
                 handler: 'generate_review_id.handler',
                 options: lambdaOptions,
             }),
             notifyNegativeReview: new LambdaHandler(this, 'NotifyNegativeReviewHandler', {
-                name: 'NotifyNegativeReviewFunction',
+                name: `${this.owner}NotifyNegativeReviewFunction`,
                 runtime: lambda.Runtime.PYTHON_3_11,
                 codeAsset: lambda.Code.fromAsset('src/reviews/notify_negative_review'),
                 handler: 'notify_negative_review.handler',
