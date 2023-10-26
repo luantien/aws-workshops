@@ -38,6 +38,14 @@ this.provisionBookResources(lambdaOptions, authorizer);
 # Deploy Book Services with CDK
 cdk deploy --profile ${AWS_USERNAME}
 ```
+- Replace `<AWS_USERNAME>` with your AWS Username in `src/seeders/data-seeder.json` (line 2).
+```javascript
+{
+    "<AWS_USERNAME>Books":[ // => Replace <AWS_USERNAME> with your AWS Username
+        ...
+    ]
+}
+```
 - Run Data Seeder for DynamoDB Books Table
 ```bash
 aws dynamodb batch-write-item --profile ${AWS_USERNAME} --request-items file://./src/seeders/data-seeder.json
