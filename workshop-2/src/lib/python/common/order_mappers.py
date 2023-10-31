@@ -18,8 +18,8 @@ def mapOrderDetail(items):
             result['status'] = item['Status']['S']
             result['customer'] = item['Customer']['S']
             result['total'] = float(item['Total']['S'])
-            result['createdDate'] = item['CreatedDate']['S']
-            result['updatedDate'] = item['UpdatedDate']['S']
+            result['createdAt'] = item['CreatedAt']['S']
+            result['updatedAt'] = item['UpdatedAt']['S']
         elif item['EntityType']['S'] == 'orderitem':
             result['items'].append({
                 'bookId': item['SK']['S'],

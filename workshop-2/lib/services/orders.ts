@@ -109,7 +109,7 @@ export class OrdersService extends Construct {
         
         this.provisionOrderResources(lambdaOptions, authorizer);
 
-        this.provisionDownStreamPipeline();
+        this.provisionDownStreamPipeline(lambdaOptions);
         this.generateCfnOutput();
     }
 
@@ -167,7 +167,7 @@ export class OrdersService extends Construct {
         this.dynamodb.table.grantReadWriteData(handlers.createOrder.function);
     }
 
-    protected provisionDownStreamPipeline() {
+    protected provisionDownStreamPipeline(lambdaOptions: LambdaFunctionProps) {
         const pipeDLQ = new sqs.Queue(this, 'PipeDLQ', {
             queueName: `${this.owner}PipeDLQ`,
         });
@@ -175,6 +175,19 @@ export class OrdersService extends Construct {
         const orderEventBus = new events.EventBus(this, 'OrderEventBus', {
             eventBusName: `${this.owner}OrderEventBus`,
         });
+
+        const handlers = {
+            enrichOrderEvent: new LambdaHandler(this, 'EnrichOrderEventHandler', {
+                name: `${this.owner}EnrichOrderEventFunction`,
+                runtime: lambda.Runtime.PYTHON_3_11,
+                codeAsset: lambda.Code.fromAsset('src/orders/enrich_order_event'),
+                handler: 'enrich_order_event.handler',
+                options: {
+                    environment: {},
+                    layers: lambdaOptions.layers,
+                },
+            }),
+        };
 
         const eventPipeRole = new iam.Role(this, 'EventBridgePipeRole', {
             roleName: `${this.owner}EventBridgePipeRole`,
@@ -184,6 +197,7 @@ export class OrdersService extends Construct {
         this.dynamodb.table.grantStreamRead(eventPipeRole);
         orderEventBus.grantPutEventsTo(eventPipeRole);
         pipeDLQ.grantSendMessages(eventPipeRole);
+        handlers.enrichOrderEvent.function.grantInvoke(eventPipeRole);
 
         const eventPipe = new CfnPipe(this, 'EventBridgePipe', {
             name: `${this.owner}EventBridgePipe`,
@@ -197,30 +211,35 @@ export class OrdersService extends Construct {
                     deadLetterConfig: {
                         arn: pipeDLQ.queueArn,
                     },
+                    maximumRetryAttempts: 3, // Set the retry policy to 3 attempts
                 },
                 filterCriteria: {
                     filters: [
                         {
-                            pattern: '{ "eventName": ["INSERT", "MODIFY"] }'
+                            pattern: `{
+                                "eventName": ["INSERT"],
+                                "dynamodb": {
+                                    "NewImage": {
+                                        "EntityType": { "S": ["order"]}
+                                    }
+                                }
+                            }`
                         },
                     ],
-                }
+                },
             },
             target: orderEventBus.eventBusArn,
             targetParameters: {
                 eventBridgeEventBusParameters: {
                     detailType: 'OrderChanged',
-                    source: 'aws:dynamodb',
+                    source: 'order.event',
                 },
-                // DynamoDB Stream Record
-                // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_streams_Record.html
-                inputTemplate: `{
-                    "meta": {
-                        "correlationId": <$.eventID>,
-                        "changeType": "OrderChangedEvent"
-                    },
-                    "content": <$.dynamodb>
-                }`
+            },
+            // DynamoDB Stream Record
+            // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_streams_Record.html
+            enrichment: handlers.enrichOrderEvent.function.functionArn,
+            enrichmentParameters: {
+                inputTemplate: ``, // Empty string to pass the entire record
             },
         });
         
@@ -236,12 +255,6 @@ export class OrdersService extends Construct {
                     fifo: true,
                 }),
             },
-        });
-
-        const orderConfirmedQueue = new sqs.Queue(this, 'OrderConfirmedQueue', {
-            queueName: `${this.owner}OrderConfirmedQueue.fifo`,
-            fifo: true,
-            deduplicationScope: sqs.DeduplicationScope.MESSAGE_GROUP,
         });
 
         const queuePolicy = new sqs.CfnQueuePolicy(this, 'OrderCreatedQueuePolicy', {
@@ -264,25 +277,21 @@ export class OrdersService extends Construct {
             description: 'Rule to capture order created events',
             targets: [
                 new event_targets.SqsQueue(orderCreatedQueue, {
-                    messageGroupId: 'OrderCreated',
+                    messageGroupId: 'OrderInserted',
                     retryAttempts: 3, // Set the retry policy to 3 attempts
                     maxEventAge: cdk.Duration.seconds(300),  // Set the maxEventAge retry policy to 5 minutes
+                    deadLetterQueue: pipeDLQ,
                 }),
             ],
             // EventBride Event Structure
             // https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events-structure.html
             eventPattern: {
                 detailType: ['OrderChanged'],
+                source: ['order.event'],
                 detail: {
                     meta: {
-                        changeType: ['OrderChangedEvent'],
+                        eventName: ['ORDER_INSERT'],
                     },
-                    content: {
-                        "NewImage": {
-                            "EntityType": { "S": ["order"]},
-                            "Status": {"S": ["CREATED"]},
-                        }
-                    }
                 },
             },
         });

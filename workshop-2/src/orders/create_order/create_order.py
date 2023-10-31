@@ -2,14 +2,12 @@ from datetime import datetime
 import os, logging, json
 from aws_xray_sdk.core import xray_recorder, patch_all
 import common.dynamodb as db
-from common.error_handler import error_handler
 from common.order_mappers import OrderStatus
 
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 patch_all()
-
 lambda_env = os.getenv('LAMBDA_ENV', 'prod')
 db_config = db.get_dynamodb_config()
 db_client = db.dynamodb_client(env=lambda_env, logger=logger)
@@ -64,8 +62,9 @@ def handler(event, context):
                     "Request": { "S": event['body'] },
                     "Customer": { "S": event['requestContext']['authorizer']['claims']['sub']},
                     "Status": { "S": OrderStatus.CREATED.value },
-                    "CreatedDate": { "S": str(datetime.utcnow()) },
-                    "UpdatedDate": { "S": str(datetime.utcnow()) },
+                    "TraceId": { "S": event['headers']['X-Amzn-Trace-Id'] },
+                    "CreatedAt": { "S": str(datetime.utcnow()) },
+                    "UpdatedAt": { "S": str(datetime.utcnow()) },
                     "Total": { "S": str(data['total']) },
                 },
                 "TableName": db_config['table_name'],
