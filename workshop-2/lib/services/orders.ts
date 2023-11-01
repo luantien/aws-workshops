@@ -4,7 +4,8 @@ import * as agw from 'aws-cdk-lib/aws-apigateway';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as events from 'aws-cdk-lib/aws-events';
-import * as event_targets from 'aws-cdk-lib/aws-events-targets';
+import * as eventTargets from 'aws-cdk-lib/aws-events-targets';
+import * as lambdaSources from 'aws-cdk-lib/aws-lambda-event-sources';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { UserPoolClient } from 'aws-cdk-lib/aws-cognito';
 import { CfnPipe } from 'aws-cdk-lib/aws-pipes';
@@ -187,6 +188,13 @@ export class OrdersService extends Construct {
                     layers: lambdaOptions.layers,
                 },
             }),
+            processeOrder: new LambdaHandler(this, 'ProcessOrderHandler', {
+                name: `${this.owner}ProcessOrderFunction`,
+                runtime: lambda.Runtime.PYTHON_3_11,
+                codeAsset: lambda.Code.fromAsset('src/orders/process_order'),
+                handler: 'process_order.handler',
+                options: lambdaOptions,
+            }),
         };
 
         const eventPipeRole = new iam.Role(this, 'EventBridgePipeRole', {
@@ -208,6 +216,7 @@ export class OrdersService extends Construct {
                 dynamoDbStreamParameters: {
                     startingPosition: 'LATEST',
                     batchSize: 1, // Set the batch size to 1
+                    maximumBatchingWindowInSeconds: 120, // Set the maximum batch window to 60 seconds
                     deadLetterConfig: {
                         arn: pipeDLQ.queueArn,
                     },
@@ -248,6 +257,7 @@ export class OrdersService extends Construct {
             fifo: true,
             deduplicationScope: sqs.DeduplicationScope.MESSAGE_GROUP,
             contentBasedDeduplication: true,
+            deliveryDelay: cdk.Duration.seconds(120),
             deadLetterQueue: {
                 maxReceiveCount: 3,
                 queue: new sqs.Queue(this, 'OrderCreatedDLQ', {
@@ -256,6 +266,12 @@ export class OrdersService extends Construct {
                 }),
             },
         });
+        handlers.processeOrder.function.addEventSource(
+            new lambdaSources.SqsEventSource(orderCreatedQueue, {
+                batchSize: 1,
+            })
+        );
+        this.dynamodb.table.grantReadWriteData(handlers.processeOrder.function);
 
         const queuePolicy = new sqs.CfnQueuePolicy(this, 'OrderCreatedQueuePolicy', {
             policyDocument: new iam.PolicyDocument({
@@ -276,7 +292,7 @@ export class OrdersService extends Construct {
             ruleName: `${this.owner}OrderCreatedRule`,
             description: 'Rule to capture order created events',
             targets: [
-                new event_targets.SqsQueue(orderCreatedQueue, {
+                new eventTargets.SqsQueue(orderCreatedQueue, {
                     messageGroupId: 'OrderInserted',
                     retryAttempts: 3, // Set the retry policy to 3 attempts
                     maxEventAge: cdk.Duration.seconds(300),  // Set the maxEventAge retry policy to 5 minutes

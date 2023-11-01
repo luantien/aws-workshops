@@ -32,7 +32,7 @@ def handler(event, context):
                     'ComparisonOperator': 'IN'
                 },
             },
-         )
+        )
         logger.info("DynamoDB Response: %s", response)
         
         if 'Items' in response:
