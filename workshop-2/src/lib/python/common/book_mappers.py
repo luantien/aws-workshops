@@ -3,7 +3,7 @@ def mapBookListItem(item):
         'id': item['PK']['S'],
         'title': item["Title"]['S'],
         'author': item["Author"]['S'],
-        'publishedData': item["PublishedDate"]['S'],
+        'publishedDate': item["PublishedDate"]['S'],
     }
 
 def mapBookDetail(item):
@@ -11,7 +11,7 @@ def mapBookDetail(item):
         'id': item['PK']['S'],
         'title': item["Title"]['S'],
         'author': item["Author"]['S'],
-        'publishedData': item["PublishedDate"]['S'],
+        'publishedDate': item["PublishedDate"]['S'],
     }
 
 def mapBookReview(item):

@@ -1,8 +1,8 @@
 # Module 1 - Books Service
 
-## Part 1: Book Components
+## Part 1: Book API Endpoints
 ### Cognito Services
-- **Uncomment** Cognito Services in lib/main.ts (line 16-22).
+- **Uncomment** Cognito Services in lib/main.ts (***line 17-23***).
 ```typescript
 const cognito = new CognitoService(this, 'CognitoService', {
     userPoolName: `${props.owner}WorkshopUserPool`,
@@ -13,15 +13,15 @@ cdk.Tags.of(cognito).add('name', `${props.owner ?? 'anonymous'}-cognito-service`
 cdk.Tags.of(cognito).add('description', `Cognito Service created by ${props.owner ?? 'anonymous'}`);
 ```
 ```bash
-# Deploy Book Services with CDK
+# Deploy Cognito Services with CDK
 cdk deploy --profile ${AWS_USERNAME}
 ```
-### Book Services
+### Book API Services
 - Install source dependencies.
 ```bash
 pip install -r src/requirements.txt -t src/packages/python
 ```
-- **Uncomment** Books Services in lib/main.ts (**line 25-30**).
+- **Uncomment** Books Services in [lib/main.ts](../lib/main.ts) (**line 26-31**).
 ```typescript
 const bookService = new BooksService(this, 'BookService', {
     cognito: cognito,
@@ -30,7 +30,7 @@ const bookService = new BooksService(this, 'BookService', {
 cdk.Tags.of(bookService).add('name', `${props.owner ?? 'anonymous'}-books-service`);
 cdk.Tags.of(bookService).add('description', `Books Rest APIs created by ${props.owner ?? 'anonymous'}`);
 ```
-- **Uncomment** provision step for Book resource in lib/services/books.ts (line 112).
+- **Uncomment** provision step for Book resource in [lib/services/books.ts](../lib/services/books.ts) (***line 111***).
 ```typescript
 this.provisionBookResources(lambdaOptions, authorizer);
 ```
@@ -38,7 +38,7 @@ this.provisionBookResources(lambdaOptions, authorizer);
 # Deploy Book Services with CDK
 cdk deploy --profile ${AWS_USERNAME}
 ```
-- Replace `<AWS_USERNAME>` with your AWS Username in `src/seeders/data-seeder.json` (line 2).
+- Replace `<AWS_USERNAME>` with your AWS Username in [src/seeders/data-seeder.json](../src/seeders/data-seeder.json) (***line 2***).
 ```javascript
 {
     "<AWS_USERNAME>Books":[ // => Replace <AWS_USERNAME> with your AWS Username
@@ -50,12 +50,12 @@ cdk deploy --profile ${AWS_USERNAME}
 ```bash
 aws dynamodb batch-write-item --profile ${AWS_USERNAME} --request-items file://./src/seeders/data-seeder.json
 ```
-## Part 2: Review Component
-- **Uncomment** provision step for Review resource in lib/services/books.ts (line 112).
+## Part 2: Book Review API Endpoints
+- **Uncomment** provision step for Review resource in [lib/services/books.ts](../lib/services/books.ts) (***line 113***).
 ```typescript
 this.provisionReviewResources(lambdaOptions, authorizer);
 ```
 ```bash
-# Deploy Book Services with CDK
+# Deploy Book Review API Services with CDK
 cdk deploy --profile ${AWS_USERNAME}
 ```

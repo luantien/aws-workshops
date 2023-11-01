@@ -10,12 +10,14 @@ export interface DatabaseProps {
     autoScaling: boolean;
     maxCapacity: number;
     globalSecondaryIndexes?: dynamodb.GlobalSecondaryIndexProps[];
+    stream?: dynamodb.StreamViewType;
 }
 
 export class DynamoDb extends Construct {
     static readonly ProjectionType = dynamodb.ProjectionType;
     static readonly AttributeType = dynamodb.AttributeType;
     static readonly BillingMode = dynamodb.BillingMode;
+    static readonly StreamViewType = dynamodb.StreamViewType;
     public readonly table: dynamodb.Table;
 
     constructor(scope: Construct, id: string, props: DatabaseProps) {
@@ -35,6 +37,7 @@ export class DynamoDb extends Construct {
             readCapacity: props.readCapacity ?? 5,
             writeCapacity: props.writeCapacity ?? 5,
             removalPolicy: RemovalPolicy.DESTROY,
+            stream: props.stream ?? undefined,
         });
 
         if (props.autoScaling) {

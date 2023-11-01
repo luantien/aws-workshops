@@ -107,6 +107,7 @@ export class BooksService extends Construct {
                 logoutUrls: ['https://localhost'],
             });
         }
+
         // this.provisionBookResources(lambdaOptions, authorizer);
 
         // this.provisionReviewResources(lambdaOptions, authorizer);

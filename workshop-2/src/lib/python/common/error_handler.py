@@ -5,6 +5,6 @@ def error_handler(func):
         except Exception as e:
             return {
                 'statusCode': 400,
-                'body': 'The request could not be proceed by the server due invalid data.'
+                'body': str(e)
             }
     return wrapper
