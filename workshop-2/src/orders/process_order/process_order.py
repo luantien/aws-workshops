@@ -65,6 +65,7 @@ def handler(event, context):
         
         order['Status']['S'] = OrderStatus.CONFIRMED.value if order_verified else OrderStatus.CANCELLED.value
         order['UpdatedAt']['S'] = datetime.utcnow().isoformat()
+        order['Note'] = {'S' : 'Order amount verified' } if order_verified else {'S' : 'Invalid order amount' }
 
         db_client.put_item(
             TableName=db_config['table_name'],

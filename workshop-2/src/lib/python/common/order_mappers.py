@@ -20,11 +20,19 @@ def mapOrderDetail(items):
             result['total'] = float(item['Total']['S'])
             result['createdAt'] = item['CreatedAt']['S']
             result['updatedAt'] = item['UpdatedAt']['S']
+            result['note'] = item['Note']['S'] if 'Note' in item else ''
         elif item['EntityType']['S'] == 'orderitem':
             result['items'].append({
                 'bookId': item['SK']['S'],
                 'quantity': int(item['Quantity']['N']),
                 'price': float(item['Price']['S']),
             })
-
+        elif item['EntityType']['S'] == 'orderinvoice':
+            result['invoice'] = {
+                'id': item['SK']['S'],
+                'invoiceDate': item['InvoiceDate']['S'],
+                'amount': float(item['Amount']['S']),
+                'isPaid': bool(item['IsPaid']['BOOL']),
+                'paymentMethod': item['PaymentMethod']['S'],
+            }
     return result

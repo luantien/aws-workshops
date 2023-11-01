@@ -26,6 +26,7 @@ export class OrdersService extends Construct {
     private readonly gateway: agw.RestApi;
     private readonly userPoolClient: UserPoolClient;
     private orderResource: agw.Resource | undefined;
+    private orderDetailResource: agw.Resource | undefined;
 
     constructor(scope: Construct, id: string, props: OrdersServiceProps) {
         super(scope, id);
@@ -134,6 +135,13 @@ export class OrdersService extends Construct {
                 handler: 'create_order.handler',
                 options: lambdaOptions,
             }),
+            confirmOrderDelivery: new LambdaHandler(this, 'ConfirmOrderDeliveryHandler', {
+                name: `${this.owner}ConfirmOrderDeliveryFunction`,
+                runtime: lambda.Runtime.PYTHON_3_11,
+                codeAsset: lambda.Code.fromAsset('src/orders/confirm_order_delivery'),
+                handler: 'confirm_order_delivery.handler',
+                options: lambdaOptions,
+            }),
         };
         // Generate Order Resources
         this.orderResource = this.gateway.root.addResource('orders');
@@ -150,7 +158,8 @@ export class OrdersService extends Construct {
                     : agw.AuthorizationType.NONE,
             }
         );
-        this.orderResource.addResource('{orderId}').addMethod(
+        this.orderDetailResource = this.orderResource.addResource('{orderId}');
+        this.orderDetailResource.addMethod(
             'GET',
             new agw.LambdaIntegration(
                 handlers.getOrderDetail.function,
@@ -163,9 +172,23 @@ export class OrdersService extends Construct {
                     : agw.AuthorizationType.NONE,
             }
         );
+        this.orderDetailResource.addResource('deliver').addMethod(
+            'POST',
+            new agw.LambdaIntegration(
+                handlers.confirmOrderDelivery.function,
+                { contentHandling: agw.ContentHandling.CONVERT_TO_TEXT, }
+            ),
+            {
+                authorizer: authorizer,
+                authorizationType: authorizer
+                    ? agw.AuthorizationType.COGNITO
+                    : agw.AuthorizationType.NONE,
+            }
+        );
 
         this.dynamodb.table.grantReadData(handlers.getOrderDetail.function);
         this.dynamodb.table.grantReadWriteData(handlers.createOrder.function);
+        this.dynamodb.table.grantReadWriteData(handlers.confirmOrderDelivery.function);
     }
 
     protected provisionDownStreamPipeline(lambdaOptions: LambdaFunctionProps) {

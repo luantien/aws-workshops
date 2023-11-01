@@ -28,7 +28,9 @@ def handler(event, context):
             },
             QueryFilter={
                 'EntityType': {
-                    'AttributeValueList': [{'S': 'order'}, {'S': 'orderitem'}],
+                    'AttributeValueList': [
+                        {'S': 'order'}, {'S': 'orderitem'}, {'S': 'orderinvoice'}
+                    ],
                     'ComparisonOperator': 'IN'
                 },
             },
