@@ -108,10 +108,10 @@ export class OrdersService extends Construct {
             });
         }
 
-        
-        this.provisionOrderResources(lambdaOptions, authorizer);
+        // this.provisionOrderResources(lambdaOptions, authorizer);
 
-        this.provisionDownStreamPipeline(lambdaOptions);
+        // this.provisionDownStreamPipeline(lambdaOptions);
+
         this.generateCfnOutput();
     }
 
