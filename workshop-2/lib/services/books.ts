@@ -8,10 +8,9 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { UserPoolClient } from "aws-cdk-lib/aws-cognito";
 // Common Resource Templates
-import { LambdaHandler, LambdaFunctionProps } from "../templates/lambda-handler";
-import { DynamoDb } from "../templates/dynamodb";
+import { DynamoDb } from "../component/dynamodb";
 // Dependencies
-import { CognitoService } from "./cognito";
+import { CognitoService } from "../cognito-stack";
 
 
 export interface BooksServiceProps {
@@ -46,8 +45,7 @@ export class BooksService extends Construct {
             readCapacity: 5,
             writeCapacity: 5,
             billingMode: DynamoDb.BillingMode.PROVISIONED,
-            autoScaling: false,
-            maxCapacity: 50,
+            maxCapacity: 10,
             globalSecondaryIndexes: [
                 {
                     indexName: 'AuthorIndex',
