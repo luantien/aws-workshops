@@ -10,8 +10,8 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { UserPoolClient } from 'aws-cdk-lib/aws-cognito';
 import { CfnPipe } from 'aws-cdk-lib/aws-pipes';
 // Common Resource Templates
-import { LambdaFunctionProps, LambdaHandler } from '../templates/lambda-handler';
-import { DynamoDb } from '../templates/dynamodb';
+import { LambdaFunctionProps, LambdaHandler } from '../component/lambda-handler';
+import { DynamoDb } from '../component/dynamodb';
 // Dependencies
 import { CognitoService } from './cognito';
 
