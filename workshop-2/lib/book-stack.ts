@@ -9,10 +9,9 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from "aws-cdk-lib/aws-logs";
 
 import { CognitoService } from './cognito-stack';
-import { COGNITO_CONFIG, BOOK_CONFIG, STACK_OWNER } from './config';
 import { DynamoDb } from './component/dynamodb';
 import { createLambdaHandler } from './component/lambda-handler';
-
+import { COGNITO_CONFIG, BOOK_CONFIG, STACK_OWNER } from './config';
 
 interface BookReviewWorkflowProps {
     handlers: {

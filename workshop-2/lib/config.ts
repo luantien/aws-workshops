@@ -29,7 +29,7 @@ export const BOOK_CONFIG = {
     LAMBDA_RUNTIME: lambda.Runtime.PYTHON_3_11,
     LAMBDA_PACKAGE_LAYER_PATH: 'src/packages',
     LAMBDA_COMMON_LAYER_PATH: 'src/lib',
-
+    // Email Configuration
     SES_EMAIL_FROM: process.env.SES_EMAIL_FROM ?? '',
     SES_EMAIL_TO: process.env.SES_EMAIL_TO ?? '',
 }

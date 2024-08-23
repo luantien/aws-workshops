@@ -1,63 +1,67 @@
 # Module 1 - Books Service
 ![alt Workshop2 - Module 1](./img/ws2_m1_all.png)
-## Part 1: Book API Endpoints
-![alt Module 1 - Part 1](./img/ws2_m1_p1.png)
-### Cognito Services
-- **Uncomment** Cognito Services in lib/main.ts (***line 17-23***).
-```typescript
-const cognito = new CognitoService(this, 'CognitoService', {
-    userPoolName: `${props.owner}WorkshopUserPool`,
-    domainPrefix: `${props.owner}-user-pool`,
-    region: process.env.AWS_REGION ?? 'ap-southeast-1',
-});
-cdk.Tags.of(cognito).add('name', `${props.owner ?? 'anonymous'}-cognito-service`);
-cdk.Tags.of(cognito).add('description', `Cognito Service created by ${props.owner ?? 'anonymous'}`);
+## Cognito Services
+- Create `.env` file from `.env.sample` and update the relevant variables.
+```bash
+# Move to 'workshop-2' directory
+cd workshop-2
+# Export the environment variables to the shell
+export $(grep -v '^#' .env | xargs)
 ```
 ```bash
 # Deploy Cognito Services with CDK
 cdk deploy --profile ${AWS_USERNAME}
 ```
-### Book API Services
+## Book API Services
+### Part 1: Book Resource Endpoints
+
+![alt Module 1 - Part 1](./img/ws2_m1_p1.png)
+
 - Install source dependencies.
+
 ```bash
 pip install -r src/requirements.txt -t src/packages/python
 ```
-- **Uncomment** Books Services in [lib/main.ts](../lib/main.ts) (**line 26-31**).
-```typescript
-const bookService = new BooksService(this, 'BookService', {
-    cognito: cognito,
-    owner: props.owner,
-});
-cdk.Tags.of(bookService).add('name', `${props.owner ?? 'anonymous'}-books-service`);
-cdk.Tags.of(bookService).add('description', `Books Rest APIs created by ${props.owner ?? 'anonymous'}`);
+
+- Set `STACK_BOOK_ENABLED` in `.env` to `true` then export the variables to the terminal again.
+```bash
+# Export the environment variables to the shell
+export $(grep -v '^#' .env | xargs)
 ```
-- **Uncomment** provision step for Book resource in [lib/services/books.ts](../lib/services/books.ts) (***line 111***).
-```typescript
-this.provisionBookResources(lambdaOptions, authorizer);
-```
+
+- Then deploy the cdk stack again using `cdk deploy`. You can also run `cdk synth` before the deployment and have a look on `cdk.out` folder to see the changes in the stack.
+
 ```bash
 # Deploy Book Services with CDK
 cdk deploy --profile ${AWS_USERNAME}
 ```
+
 - Replace `<AWS_USERNAME>` with your AWS Username in [src/seeders/data-seeder.json](../src/seeders/data-seeder.json) (***line 2***).
 ```javascript
 {
-    "<AWS_USERNAME>Books":[ // => Replace <AWS_USERNAME> with your AWS Username
+    "<AWS_USERNAME>Books":[ // => Replace <AWS_USERNAME> with your AWS Username (For example: sd0001)
         ...
     ]
 }
 ```
+
 - Run Data Seeder for DynamoDB Books Table
 ```bash
 aws dynamodb batch-write-item --profile ${AWS_USERNAME} --request-items file://./src/seeders/data-seeder.json
 ```
-## Part 2: Book Review API Endpoints
+
+## Part 2: Book Review Resource Endpoints
+
 ![alt Module 1 - Part 1](./img/ws2_m1_p2.png)
-- **Uncomment** provision step for Review resource in [lib/services/books.ts](../lib/services/books.ts) (***line 113***).
-```typescript
-this.provisionReviewResources(lambdaOptions, authorizer);
-```
+
+- Set `STACK_BOOK_REVIEW_ENABLED` in `.env` to `true` then export the variables to the terminal again.
 ```bash
-# Deploy Book Review API Services with CDK
+# Export the environment variables to the shell
+export $(grep -v '^#' .env | xargs)
+```
+
+- Then deploy the cdk stack again using `cdk deploy`.
+```bash
+# Deploy Book Services with CDK
 cdk deploy --profile ${AWS_USERNAME}
 ```
