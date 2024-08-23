@@ -17,24 +17,24 @@ export const COGNITO_CONFIG = {
 // Book Service Configuration
 export const BOOK_CONFIG = {
     // Stack Configuration
-    STACK_ENABLED: process.env.STACK_BOOK_ENABLED === 'true' ? true : false,
-    REVIEW_FEATURE_ENABLED: false,
+    STACK_ENABLED: process.env.STACK_BOOK_ENABLED === "true",
+    REVIEW_FEATURE_ENABLED: process.env.STACK_BOOK_REVIEW_ENABLED === "true",
     // DynamoDB Configuration
-    DYNAMODB_TABLE_NAME: 'BooksTable',
+    DYNAMODB_TABLE_NAME: `${STACK_OWNER}Books`,
     DYNAMODB_READ_CAPACITY: 5,
     DYNAMODB_WRITE_CAPACITY: 5,
     DYNAMODB_BILLING_MODE: dynamodb.BillingMode.PROVISIONED,
     // Lambda Configuration
     LAMBDA_ENV: process.env.LAMBDA_ENV ?? 'prod',
     LAMBDA_RUNTIME: lambda.Runtime.PYTHON_3_11,
-    LAMBDA_SOURCE: 'src/books',
     LAMBDA_PACKAGE_LAYER_PATH: 'src/packages',
     LAMBDA_COMMON_LAYER_PATH: 'src/lib',
-    GET_BOOKS_FUNC: 'get_books',
-    GET_BOOK_DETAIL_FUNC: 'get_book_detail',
+
+    SES_EMAIL_FROM: process.env.SES_EMAIL_FROM ?? '',
+    SES_EMAIL_TO: process.env.SES_EMAIL_TO ?? '',
 }
 
 // Order Service Configuration
 export const ORDER_CONFIG = {
-    STACK_ENABLED : process.env.STACK_ORDER_ENABLED === 'true' ? true : false,
+    STACK_ENABLED : process.env.STACK_ORDER_ENABLED === "true",
 }

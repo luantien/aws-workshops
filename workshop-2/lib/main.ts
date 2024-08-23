@@ -20,7 +20,7 @@ export class MainStack extends Stack {
         Tags.of(cognitoService).add('description', `Cognito Service created by ${STACK_OWNER}`);
 
         // Book REST APIs
-        if (BOOK_CONFIG.STACK_ENABLED === true) {
+        if (BOOK_CONFIG.STACK_ENABLED) {
             const bookService = new BookService(this, 'BookService', cognitoService, {
                 description: `Books Rest APIs created by ${STACK_OWNER}`,
             });

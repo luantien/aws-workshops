@@ -2,8 +2,8 @@ import boto3, logging, os
 from aws_xray_sdk.core import xray_recorder, patch_all
 from common.error_handler import error_handler
 
-email_from = os.getenv('SNS_EMAIL_FROM')
-email_to = os.getenv('SNS_EMAIL_TO')
+email_from = os.getenv('SES_EMAIL_FROM')
+email_to = os.getenv('SES_EMAIL_TO')
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

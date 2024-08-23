@@ -1,6 +1,7 @@
 # Module 1 - Books Service
-
+![alt Workshop2 - Module 1](./img/ws2_m1_all.png)
 ## Part 1: Book API Endpoints
+![alt Module 1 - Part 1](./img/ws2_m1_p1.png)
 ### Cognito Services
 - **Uncomment** Cognito Services in lib/main.ts (***line 17-23***).
 ```typescript
@@ -51,6 +52,7 @@ cdk deploy --profile ${AWS_USERNAME}
 aws dynamodb batch-write-item --profile ${AWS_USERNAME} --request-items file://./src/seeders/data-seeder.json
 ```
 ## Part 2: Book Review API Endpoints
+![alt Module 1 - Part 1](./img/ws2_m1_p2.png)
 - **Uncomment** provision step for Review resource in [lib/services/books.ts](../lib/services/books.ts) (***line 113***).
 ```typescript
 this.provisionReviewResources(lambdaOptions, authorizer);
