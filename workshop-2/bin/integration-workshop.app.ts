@@ -8,8 +8,8 @@ const app = new cdk.App();
 const username = process.env.AWS_USERNAME || 'anonymous';
 
 
-new MainStack(app, 'iws-main-stack', {
-    stackName: `${username}-Integration-Workshop`,
+new MainStack(app, 'MainStack', {
+    stackName: `${username.toUpperCase()}-IntegrationWorkshop`,
     description: 'AWS Integration Workshop with EventBridge, SQS, SNS, and StepFunctions',
 });
 

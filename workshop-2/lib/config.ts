@@ -2,34 +2,39 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 
 // Stack Configuration
-export const STACK_OWNER = process.env.owner ?? 'anonymous';
-export const STACK_NAME = process.env.stack_name ?? 'Integration-Workshop';
+export const STACK_OWNER = process.env.AWS_USERNAME ?? 'anonymous';
 export const STACK_REGION = process.env.AWS_REGION ?? 'ap-southeast-1';
 export const STACK_ACCOUNT = process.env.AWS_ACCOUNT ?? '000000000000';
 
-export const STACK_BOOK_ENABLED = process.env.STACK_BOOK_ENABLED ?? false;
-export const STACK_ORDER_ENABLED = process.env.STACK_ORDER_ENABLED ?? false;
-
 // Cognito Service Configuration
-export const COGNITO_USERPOOL_NAME = `${STACK_OWNER}UserPool`;
-export const COGNITO_DOMAIN_PREFIX = `${STACK_OWNER}-user-pool`;
+export const COGNITO_CONFIG = {
+    USERPOOL_NAME: `${STACK_OWNER}UserPool`,
+    DOMAIN_PREFIX: `${STACK_OWNER}-user-pool`,
+    CALLBACK_URL: process.env.COGNITO_CALLBACK_URL ?? 'https://localhost',
+    LOGOUT_URL: process.env.COGNITO_LOGOUT_URL ?? 'https://localhost',
+}
 
 // Book Service Configuration
 export const BOOK_CONFIG = {
-    DYNAMODB_TABLE_NAME: 'BooksTable',
+    // Stack Configuration
+    STACK_ENABLED: process.env.STACK_BOOK_ENABLED === "true",
+    REVIEW_FEATURE_ENABLED: process.env.STACK_BOOK_REVIEW_ENABLED === "true",
+    // DynamoDB Configuration
+    DYNAMODB_TABLE_NAME: `${STACK_OWNER}Books`,
     DYNAMODB_READ_CAPACITY: 5,
     DYNAMODB_WRITE_CAPACITY: 5,
     DYNAMODB_BILLING_MODE: dynamodb.BillingMode.PROVISIONED,
+    // Lambda Configuration
     LAMBDA_ENV: process.env.LAMBDA_ENV ?? 'prod',
     LAMBDA_RUNTIME: lambda.Runtime.PYTHON_3_11,
-    LAMBDA_SOURCE: 'src/books',
     LAMBDA_PACKAGE_LAYER_PATH: 'src/packages',
     LAMBDA_COMMON_LAYER_PATH: 'src/lib',
-    GET_BOOKS_FUNC: 'get_books',
-    GET_BOOK_DETAIL_FUNC: 'get_book_detail',
+    // Email Configuration
+    SES_EMAIL_FROM: process.env.SES_EMAIL_FROM ?? '',
+    SES_EMAIL_TO: process.env.SES_EMAIL_TO ?? '',
 }
 
-
-
 // Order Service Configuration
-
+export const ORDER_CONFIG = {
+    STACK_ENABLED : process.env.STACK_ORDER_ENABLED === "true",
+}

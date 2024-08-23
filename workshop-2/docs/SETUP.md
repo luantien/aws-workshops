@@ -51,16 +51,19 @@ export $(grep -v '^#' .env | xargs)
 |   |-- cdk.json                # CDK configuration
 |   |-- package.json            # NPM package configuration
 |   |-- tsconfig.json           # Typescript configuration
-|   |-- bin                     # CDK entrypoint
+|   |-- bin                     # CDK Entrypoint
 |   |-- cdk.outs                # CDK outputs
 |   |-- docs                    # Workshop 2 documentation
-|   |-- lib                     # CDK constructs
-|   |   |-- services            # CDK constructs for services
-|   |   |-- templates           # CDK constructs for templates
-|   |   |-- main.ts             # CDK main stack construct    
+|   |-- lib                     # Construct Libraries
+|   |   |-- component           # Common Components
+|   |   |-- book-stack.ts       # Book Nested Stack
+|   |   |-- cognito-stack.ts    # Cognito nested stack
+|   |   |-- order-stack.ts      # Order Nested Stack
+|   |   |-- main.ts             # Main Stack
 |   |-- src                     # Source code
 |   |   |-- books               # Books lambda functions
 |   |   |-- reviews             # Reviews lambda functions
+|   |   |-- orders              # Orders lambda functions
 |   |   |-- requirements.txt    # Python dependencies
 |   |-- test                    # Unit tests
 ```
