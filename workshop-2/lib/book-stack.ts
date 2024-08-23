@@ -5,7 +5,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as agw from 'aws-cdk-lib/aws-apigateway';
 import { UserPoolClient } from 'aws-cdk-lib/aws-cognito';
 import { CognitoService } from './cognito-stack';
-import { BOOK_CONFIG, COGNITO_USERPOOL_NAME, STACK_OWNER } from './config';
+import { COGNITO_CONFIG, BOOK_CONFIG, STACK_OWNER } from './config';
 import { DynamoDb } from './component/dynamodb';
 import { createLambdaHandler } from './component/lambda-handler';
 
@@ -14,21 +14,16 @@ export class BookService extends NestedStack {
     private readonly gateway: agw.RestApi;
     private readonly dynamodb: DynamoDb;
     private authorizer: agw.CognitoUserPoolsAuthorizer;
-    private userPoolClient: UserPoolClient;
-    private bookResource: agw.Resource | undefined;
-    private reviewResource: agw.Resource | undefined;
 
     constructor(scope: Construct, id: string, cognitoService: CognitoService, props?: NestedStackProps) {
         super(scope, id, props);
-
         // Initialize Cognito Authorizer
         if (!cognitoService.userPool) {
             throw new Error('Cognito is required for Books Service');
         }
-
         this.authorizer = new agw.CognitoUserPoolsAuthorizer(this, 'Authorizer', {
-            authorizerName: `${COGNITO_USERPOOL_NAME}Authorizer`,
-            cognitoUserPools: [cognitoService.userPool],
+            authorizerName: `${COGNITO_CONFIG.USERPOOL_NAME}Authorizer`,
+            cognitoUserPools: [ cognitoService.userPool ],
         });
 
         // DynamoDB Table setup
@@ -56,7 +51,6 @@ export class BookService extends NestedStack {
             ]
         });
 
-
         // Lambda Runtime Dependencies construction
         const lambdaOptions: lambda.FunctionOptions = {
             environment: {
@@ -74,9 +68,9 @@ export class BookService extends NestedStack {
         }
 
         // REST API Gateway setup
-        this.gateway = new agw.RestApi(this, 'BooksApi', {
+        this.gateway = new agw.RestApi(this, 'BooksRestAPI', {
             restApiName: `${STACK_OWNER}BooksApi`,
-            description: 'Books REST API Gateway',
+            description: 'Book Service Rest APIs',
             cloudWatchRole: true,
             deployOptions: {
                 loggingLevel: agw.MethodLoggingLevel.INFO,
@@ -85,12 +79,14 @@ export class BookService extends NestedStack {
                 stageName: 'v1',
             },
         });
-        // this.gateway = setupApiGateway(this);
+
+        // Provision Book Resources
+        this.provisionBookResources(lambdaOptions);
     }
 
     protected provisionBookResources(lambdaOptions: lambda.FunctionOptions) {
         const handlers = {
-            getBooks: createLambdaHandler(this, 'GetBooksHandler', {
+            getBooksFn: createLambdaHandler(this, 'GetBooksFunction', {
                 name: `${STACK_OWNER}GetBooksFunction`,
                 runtime: BOOK_CONFIG.LAMBDA_RUNTIME,
                 codeAsset: lambda.Code.fromAsset(`${BOOK_CONFIG.LAMBDA_SOURCE}/${BOOK_CONFIG.GET_BOOKS_FUNC}`),
@@ -98,7 +94,7 @@ export class BookService extends NestedStack {
                 memorySize: 128,
                 options: lambdaOptions,
             }),
-            getBookDetail: createLambdaHandler(this, 'GetBookDetailHandler', {
+            getBookDetailFn: createLambdaHandler(this, 'GetBookDetailFunction', {
                 name: `${STACK_OWNER}GetBookDetailFunction`,
                 runtime: BOOK_CONFIG.LAMBDA_RUNTIME,
                 codeAsset: lambda.Code.fromAsset(`${BOOK_CONFIG.LAMBDA_SOURCE}/${BOOK_CONFIG.GET_BOOK_DETAIL_FUNC}`),
@@ -108,10 +104,10 @@ export class BookService extends NestedStack {
             }),
         }
 
-        this.bookResource = this.gateway.root.addResource('books');
+        const bookResource = this.gateway.root.addResource('books');
 
-        this.bookResource.addMethod('GET',
-            new agw.LambdaIntegration(handlers.getBooks, {
+        bookResource.addMethod('GET',
+            new agw.LambdaIntegration(handlers.getBooksFn, {
                     contentHandling: agw.ContentHandling.CONVERT_TO_TEXT 
                 }),
             {
@@ -120,14 +116,19 @@ export class BookService extends NestedStack {
             }
         );
 
-        this.bookResource.addResource('{bookId}').addMethod('GET',
-            new agw.LambdaIntegration(handlers.getBookDetail, {
+        bookResource.addResource('{bookId}').addMethod('GET',
+            new agw.LambdaIntegration(handlers.getBookDetailFn, {
                     contentHandling: agw.ContentHandling.CONVERT_TO_TEXT 
                 }),
             {
                 authorizer: this.authorizer,
                 authorizationType: agw.AuthorizationType.COGNITO,
             }
+        );
+
+        // Grant permissions to Lambda functions to access DynamoDB table
+        this.dynamodb.table.grantReadData(handlers.getBooksFn);
+        this.dynamodb.table.grantReadData(handlers.getBookDetailFn);
     }
 
     protected provisionReviewResource() {

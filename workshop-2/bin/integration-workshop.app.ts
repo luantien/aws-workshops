@@ -9,7 +9,7 @@ const username = process.env.AWS_USERNAME || 'anonymous';
 
 
 new MainStack(app, 'iws-main-stack', {
-    stackName: `${username}-Integration-Workshop`,
+    stackName: `${username.toUpperCase()}-IntegrationWorkshop`,
     description: 'AWS Integration Workshop with EventBridge, SQS, SNS, and StepFunctions',
 });
 
