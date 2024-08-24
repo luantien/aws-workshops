@@ -38,6 +38,8 @@ export const BOOK_CONFIG = {
 export const ORDER_CONFIG = {
     // Stack Configuration
     STACK_ENABLED : process.env.STACK_ORDER_ENABLED === "true",
+    STACK_ORDER_PIPELINE_ENABLED: process.env.STACK_ORDER_PIPELINE_ENABLED === "true",
+    STACK_ORDER_PROCESSOR_ENABLED: process.env.STACK_ORDER_PROCESSOR_ENABLED === "true",
     // DynamoDB Configuration
     DYNAMODB_TABLE_NAME: `${STACK_OWNER}Orders`,
     DYNAMODB_READ_CAPACITY: 5,

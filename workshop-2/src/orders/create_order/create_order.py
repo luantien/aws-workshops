@@ -52,14 +52,15 @@ def handler(event, context):
     
     data = json.loads(event['body']);
     
-    # Verify that the total amount matches the sum of the items
-    order_total = sum([item['price'] * item['quantity'] for item in data['items']]);
-    if order_total != data['total']:
-        logger.warning("Total amount does not match: %s != %s", order_total, data['total']);
-        return {
-            'statusCode': 400,
-            'body': json.dumps({ "message": "Total amount does not match" })
-        }
+    # Verify that the total amount matches the sum of the items 
+    # (disabled for playing order processing in part 2)
+    # order_total = sum([item['price'] * item['quantity'] for item in data['items']]);
+    # if order_total != data['total']:
+    #     logger.warning("Total amount does not match: %s != %s", order_total, data['total']);
+    #     return {
+    #         'statusCode': 400,
+    #         'body': json.dumps({ "message": "Total amount does not match" })
+    #     }
     
     # Create new order in DynamoDB
     write_actions = [
