@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import os, logging, json
 from aws_xray_sdk.core import xray_recorder, patch_all
 import common.dynamodb as db
@@ -64,7 +64,7 @@ def handler(event, context):
             }
         
         order['Status']['S'] = OrderStatus.CONFIRMED.value if order_verified else OrderStatus.CANCELLED.value
-        order['UpdatedAt']['S'] = datetime.utcnow().isoformat()
+        order['UpdatedAt']['S'] = datetime.now(timezone.utc).isoformat()
         order['Note'] = {'S' : 'Order amount verified' } if order_verified else {'S' : 'Invalid order amount' }
 
         db_client.put_item(

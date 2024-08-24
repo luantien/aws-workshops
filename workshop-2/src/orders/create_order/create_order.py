@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import os, logging, json
 from aws_xray_sdk.core import xray_recorder, patch_all
 import common.dynamodb as db
@@ -49,9 +49,20 @@ def handler(event, context):
                 'body': json.dumps({ "message": "Token already used" })
             }
 
-    # Create new order in DynamoDB
+    
     data = json.loads(event['body']);
     
+    # Verify that the total amount matches the sum of the items 
+    # (disabled for playing order processing in part 2)
+    # order_total = sum([item['price'] * item['quantity'] for item in data['items']]);
+    # if order_total != data['total']:
+    #     logger.warning("Total amount does not match: %s != %s", order_total, data['total']);
+    #     return {
+    #         'statusCode': 400,
+    #         'body': json.dumps({ "message": "Total amount does not match" })
+    #     }
+    
+    # Create new order in DynamoDB
     write_actions = [
         {
             "Put": {
@@ -63,8 +74,8 @@ def handler(event, context):
                     "Customer": { "S": event['requestContext']['authorizer']['claims']['sub']},
                     "Status": { "S": OrderStatus.CREATED.value },
                     "TraceId": { "S": event['headers']['X-Amzn-Trace-Id'] },
-                    "CreatedAt": { "S": str(datetime.utcnow()) },
-                    "UpdatedAt": { "S": str(datetime.utcnow()) },
+                    "CreatedAt": { "S": str(datetime.now(timezone.utc)) },
+                    "UpdatedAt": { "S": str(datetime.now(timezone.utc)) },
                     "Total": { "S": str(data['total']) },
                 },
                 "TableName": db_config['table_name'],

@@ -11,7 +11,8 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import { CognitoService } from './cognito-stack';
 import { DynamoDb } from './component/dynamodb';
 import { createLambdaHandler } from './component/lambda-handler';
-import { COGNITO_CONFIG, BOOK_CONFIG, STACK_OWNER } from './config';
+import { BOOK_CONFIG, STACK_OWNER } from './config';
+
 
 interface BookReviewWorkflowProps {
     handlers: {
@@ -34,7 +35,7 @@ export class BookService extends NestedStack {
             throw new Error('Cognito is required for Books Service');
         }
         this.authorizer = new agw.CognitoUserPoolsAuthorizer(this, 'Authorizer', {
-            authorizerName: `${COGNITO_CONFIG.USERPOOL_NAME}Authorizer`,
+            authorizerName: `${cognitoService.userPoolName}Authorizer`,
             cognitoUserPools: [ cognitoService.userPool ],
         });
 
@@ -93,7 +94,7 @@ export class BookService extends NestedStack {
         }
 
         // Provision Book Resources
-        this.provisionBookResources(lambdaOptions);
+        this.provisionBookResource(lambdaOptions);
 
         if (BOOK_CONFIG.REVIEW_FEATURE_ENABLED) {
             this.provisionReviewResource(lambdaOptions);
@@ -110,7 +111,7 @@ export class BookService extends NestedStack {
         })
     }
 
-    protected provisionBookResources(lambdaOptions: lambda.FunctionOptions) {
+    protected provisionBookResource(lambdaOptions: lambda.FunctionOptions) {
         const handlers = {
             getBooksFn: createLambdaHandler(this, 'GetBooksFunction', {
                 name: `${STACK_OWNER}GetBooksFunction`,

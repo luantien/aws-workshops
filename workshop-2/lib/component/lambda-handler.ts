@@ -1,6 +1,8 @@
-import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import { Construct } from 'constructs';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { RemovalPolicy } from 'aws-cdk-lib';
 
 
 export interface LambdaHandlerProps {
@@ -24,6 +26,7 @@ export function createLambdaHandler(scope: Construct, id: string,
         tracing: lambda.Tracing.ACTIVE,
         environment: props.options?.environment ?? {},
         layers: props.options?.layers ?? [],
+        logRetention: RetentionDays.ONE_DAY,
     });
 
     if (props.policies) {

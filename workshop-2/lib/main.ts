@@ -1,9 +1,10 @@
 import {Stack, StackProps, Tags} from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+
 import { CognitoService } from './cognito-stack';
 import { BookService } from './book-stack';
-
-import { STACK_OWNER, BOOK_CONFIG } from './config';
+import { OrderService } from './order-stack';
+import { STACK_OWNER, BOOK_CONFIG, ORDER_CONFIG } from './config';
 
 
 export class MainStack extends Stack {
@@ -29,11 +30,12 @@ export class MainStack extends Stack {
         }
 
         // Order REST APIs
-        // const orderService = new OrdersService(this, 'OrderService', {
-        //     cognito: cognito,
-        //     dynamodb: dynamodb,
-        // });
-        // Tags.of(orderService).add('name', `${STACK_OWNER}-order-service`);
-        // Tags.of(orderService).add('description', `Orders Rest APIs created by ${STACK_OWNER}`);
+        if (ORDER_CONFIG.STACK_ENABLED) {
+            const orderService = new OrderService(this, 'OrderService', cognitoService, {
+                description: `Orders Rest APIs created by ${STACK_OWNER}`,
+            });
+            Tags.of(orderService).add('name', `${STACK_OWNER}-order-service`);
+            Tags.of(orderService).add('description', `Orders Rest APIs created by ${STACK_OWNER}`);
+        }
     }
 }
