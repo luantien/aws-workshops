@@ -36,5 +36,16 @@ export const BOOK_CONFIG = {
 
 // Order Service Configuration
 export const ORDER_CONFIG = {
+    // Stack Configuration
     STACK_ENABLED : process.env.STACK_ORDER_ENABLED === "true",
+    // DynamoDB Configuration
+    DYNAMODB_TABLE_NAME: `${STACK_OWNER}Orders`,
+    DYNAMODB_READ_CAPACITY: 5,
+    DYNAMODB_WRITE_CAPACITY: 5,
+    DYNAMODB_BILLING_MODE: dynamodb.BillingMode.PROVISIONED,
+    // Lambda Configuration
+    LAMBDA_ENV: process.env.LAMBDA_ENV ?? 'prod',
+    LAMBDA_RUNTIME: lambda.Runtime.PYTHON_3_11,
+    LAMBDA_PACKAGE_LAYER_PATH: 'src/packages',
+    LAMBDA_COMMON_LAYER_PATH: 'src/lib',
 }
