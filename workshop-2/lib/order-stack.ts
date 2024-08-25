@@ -63,10 +63,14 @@ export class OrderService extends NestedStack {
         this.gateway = new agw.RestApi(this, 'OrderRestAPI', {
             restApiName: `${STACK_OWNER}OrdersApi`,
             description: 'Order Service Rest APIs',
-            cloudWatchRole: true,
+            cloudWatchRole: false,
             deployOptions: {
+                // TODO: Need to test the access log destination customization
+                // accessLogDestination: new agw.LogGroupLogDestination(new LogGroup(this, 'OrderApiLogGroup', {
+                //     logGroupName: `/aws/apigateway/${STACK_OWNER}/order-rest-api`,
+                //     retention: 1,
+                // })),
                 loggingLevel: agw.MethodLoggingLevel.INFO,
-                dataTraceEnabled: false,
                 tracingEnabled: true,
                 stageName: 'v1',
             },
