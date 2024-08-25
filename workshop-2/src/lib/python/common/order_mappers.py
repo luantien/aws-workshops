@@ -7,7 +7,7 @@ class OrderStatus(Enum):
     CANCELLED = 'CANCELLED'
     DELIVERED = 'DELIVERED'
 
-def mapOrderDetail(items):
+def map_order_detail(items):
     result = {
         'items': [],
     };
@@ -36,3 +36,21 @@ def mapOrderDetail(items):
                 'paymentMethod': item['PaymentMethod']['S'],
             }
     return result
+
+def map_order_dynamodb_stream_event(record):
+    enriched_event = {
+        'meta': {
+            'eventID': record['eventID'],
+            "eventName": f"ORDER_{'CREATED' if record['eventName'] == 'INSERT' else record['eventName']}",
+            "eventSource": record['eventSource'],
+            "eventSourceARN": record['eventSourceARN'],
+            "awsRegion": record['awsRegion'],
+        },
+        'content': {
+            'id': record['dynamodb']['Keys']['PK']['S'],
+            'type': record['dynamodb']['NewImage']['EntityType']['S'],
+            'status': record['dynamodb']['NewImage']['Status']['S'],
+            'total': float(record['dynamodb']['NewImage']['Total']['S']),
+        },
+    }
+    return enriched_event

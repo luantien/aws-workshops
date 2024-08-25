@@ -1,6 +1,6 @@
-import logging, json
+import logging
 from aws_xray_sdk.core import xray_recorder, patch_all
-
+import common.order_mappers as mappers
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -8,27 +8,17 @@ patch_all()
 
 
 def handler(event, context):
-    
+    logger.info("Retrieved lambda event: %s", event)
     result = []
+
     # Event sent as a list of records
     for record in event:
-        logger.info("Enriching event: %s", record)
-        enriched_event = {
-            'meta': {
-                'eventID': record['eventID'],
-                "eventName": f"ORDER_{record['eventName']}",
-                "eventSource": record['eventSource'],
-                "eventSourceARN": record['eventSourceARN'],
-                "awsRegion": record['awsRegion'],
-            },
-            'content': {
-                'id': record['dynamodb']['Keys']['PK']['S'],
-                'type': record['dynamodb']['NewImage']['EntityType']['S'],
-                'status': record['dynamodb']['NewImage']['Status']['S'],
-                'total': float(record['dynamodb']['NewImage']['Total']['S']),
-            },
-        }
+        logger.info("Processing record: %s", record)
+        
+        enriched_event = mappers.map_order_dynamodb_stream_event(record)
+        
         logger.info("Enriched record: %s", enriched_event)
+        
         result.append(enriched_event)
 
     return result

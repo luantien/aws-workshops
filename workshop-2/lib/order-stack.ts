@@ -93,11 +93,10 @@ export class OrderService extends NestedStack {
 
         if (ORDER_CONFIG.STACK_ORDER_PROCESSOR_ENABLED) {
             this.provisionOrderProcessor(lambdaOptions);
-            // this.provisionOrderProcessingPipeline(lambdaOptions);
         }
 
-        if (ORDER_CONFIG.STACK_ORDER_PIPELINE_ENABLED) {
-            this.provisionOrderProcessingPipeline(lambdaOptions);
+        if (ORDER_CONFIG.STACK_ORDER_PIPE_ENABLED) {
+            this.provisionOrderProcessingPipe(lambdaOptions);
         }
 
         this.generateCfnOutput();
@@ -180,59 +179,141 @@ export class OrderService extends NestedStack {
         this.dynamoDb.table.grantReadWriteData(handlers.confirmOrderDeliveryFn);
     }
 
+    /** Lambda Processor is a highly recommented option for processing */
     protected provisionOrderProcessor(lambdaOptions: lambda.FunctionOptions) {
         if (!this.dynamoDb.table.tableStreamArn) {
-            throw new Error('DynamoDB Stream is required for Order Processing Pipeline');
+            throw new Error('DynamoDB Stream is required for Order Processor');
         }
+
+        const orderEventBus = new events.EventBus(this, 'OrderEventBus', {
+            eventBusName: `${STACK_OWNER}OrderEventBus`,
+        });
+
         const handlers = {
             processDynamoDbStreamFn: createLambdaHandler(this, 'ProcessDynamoDbStreamFunction', {
                 name: `${STACK_OWNER}ProcessDynamoDbStreamFunction`,
                 runtime: ORDER_CONFIG.LAMBDA_RUNTIME,
                 codeAsset: lambda.Code.fromAsset('src/orders/process_dynamodb_stream'),
                 handler: 'process_dynamodb_stream.handler',
+                options: {
+                    environment: {
+                        EVENT_BUS_ARN: orderEventBus.eventBusArn
+                    },
+                    layers: lambdaOptions.layers,
+                },
+                policies: [
+                    new iam.PolicyStatement({
+                        actions: ['events:PutEvents'],
+                        resources: [orderEventBus.eventBusArn],
+                    }),
+                ]
+            }),
+            processOrderFn: createLambdaHandler(this, 'ProcessOrderFunction', {
+                name: `${STACK_OWNER}ProcessOrderFunction`,
+                runtime: ORDER_CONFIG.LAMBDA_RUNTIME,
+                codeAsset: lambda.Code.fromAsset('src/orders/process_order'),
+                handler: 'process_order.handler',
                 options: lambdaOptions,
             }),
-            // processOrderFn: createLambdaHandler(this, 'ProcessOrderFunction', {
-            //     name: `${STACK_OWNER}ProcessOrderFunction`,
-            //     runtime: ORDER_CONFIG.LAMBDA_RUNTIME,
-            //     codeAsset: lambda.Code.fromAsset('src/orders/process_order'),
-            //     handler: 'process_order.handler',
-            //     options: lambdaOptions,
-            // }),
         };
 
-        this.dynamoDb.table.grantStreamRead(handlers.processDynamoDbStreamFn);
-
-        const orderEventDLQ = new sqs.Queue(this, 'OrderEventDLQ', {
-            queueName: `${STACK_OWNER}OrderEventDLQ`,
+        const orderCreatedQueue = new sqs.Queue(this, 'OrderCreatedQueue', {
+            queueName: `${STACK_OWNER}OrderCreatedQueue.fifo`,
+            fifo: true,
+            deduplicationScope: sqs.DeduplicationScope.MESSAGE_GROUP,
+            contentBasedDeduplication: true,
+            deliveryDelay: Duration.seconds(30),
+            deadLetterQueue: {
+                maxReceiveCount: 3,
+                queue: new sqs.Queue(this, 'OrderCreatedDLQ', {
+                    queueName: `${STACK_OWNER}OrderCreatedDLQ.fifo`,
+                    fifo: true,
+                }),
+            },
         });
 
-        handlers.processDynamoDbStreamFn.addEventSourceMapping('OrderTableEventSource', {
-            eventSourceArn: this.dynamoDb.table.tableStreamArn,
-            batchSize: 1,
-            startingPosition: lambda.StartingPosition.LATEST,
-            maxBatchingWindow: Duration.seconds(1),
-            retryAttempts: 3,
-            onFailure: new lambdaSources.SqsDlq(orderEventDLQ),
-            filters: [
-                {
-                    pattern: `{
-                        "eventName": ["INSERT"],
-                        "dynamodb": {
-                            "NewImage": {
-                                "EntityType": { "S": ["order"]}
-                            }
-                        }
-                    }`
+        const orderCreatedEventRule = new events.Rule(this, 'OrderCreatedRule', {
+            eventBus: orderEventBus,
+            ruleName: `${STACK_OWNER}OrderCreatedRule`,
+            description: 'Rule to capture order created events',
+            targets: [
+                new eventTargets.SqsQueue(orderCreatedQueue, {
+                    messageGroupId: 'OrderCreated',
+                    retryAttempts: 3, // Set the retry policy to 3 attempts
+                    maxEventAge: Duration.seconds(300),  // Set the maxEventAge retry policy to 5 minutes
+                    deadLetterQueue: new sqs.Queue(this, 'OrderCreatedRuleDLQ', {
+                        queueName: `${STACK_OWNER}OrderCreatedRuleDLQ`,
+                    }),
+                }),
+            ],
+            // EventBride Event Structure
+            // https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events-structure.html
+            eventPattern: {
+                detailType: ['OrderChanged'],
+                source: ['service.order.dynamodb.stream'],
+                detail: {
+                    meta: {
+                        eventName: ['ORDER_CREATED'],
+                    },
                 },
-            ]
+            },
         });
+
+        const queuePolicy = new sqs.CfnQueuePolicy(this, 'OrderCreatedQueuePolicy', {
+            policyDocument: new iam.PolicyDocument({
+                statements: [
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        principals: [new iam.ServicePrincipal('events.amazonaws.com')],
+                        actions: ['sqs:SendMessage'],
+                        resources: [orderCreatedQueue.queueArn],
+                    }),
+                ],
+            }),
+            queues: [orderCreatedQueue.queueUrl],
+        });
+
+        handlers.processDynamoDbStreamFn.addEventSourceMapping(
+            'OrderTableEventSource',
+            {
+                eventSourceArn: this.dynamoDb.table.tableStreamArn,
+                batchSize: 1,
+                startingPosition: lambda.StartingPosition.LATEST,
+                maxBatchingWindow: Duration.seconds(1),
+                retryAttempts: 3,
+                onFailure: new lambdaSources.SqsDlq(
+                    new sqs.Queue(this, 'OrderEventDLQ', {
+                        queueName: `${STACK_OWNER}OrderEventDLQ`,
+                    })
+                ),
+                filters: [
+                    {
+                        pattern: `{
+                            "eventName": ["INSERT"],
+                            "dynamodb": {
+                                "NewImage": {
+                                    "EntityType": { "S": ["order"]}
+                                }
+                            }
+                        }`
+                    },
+                ]
+            }
+        );
+        handlers.processOrderFn.addEventSource(
+            new lambdaSources.SqsEventSource(orderCreatedQueue, {
+                batchSize: 1,
+            })
+        );
+
+        this.dynamoDb.table.grantStreamRead(handlers.processDynamoDbStreamFn);
+        this.dynamoDb.table.grantReadWriteData(handlers.processOrderFn);
     }
 
-    /** @deprecated EventBridge Pipe is preferred to send the events directly other Services using EventBridge, SNS, SQS, etc. */
-    protected provisionOrderProcessingPipeline(lambdaOptions: lambda.FunctionOptions) {
+    /** EventBridge Pipe is preferred to send the events directly other Services using EventBridge, SNS, SQS, etc. */
+    protected provisionOrderProcessingPipe(lambdaOptions: lambda.FunctionOptions) {
         if (!this.dynamoDb.table.tableStreamArn) {
-            throw new Error('DynamoDB Stream is required for Order Processing Pipeline');
+            throw new Error('DynamoDB Stream is required for Order Processing Pipe');
         }
         const pipeDLQ = new sqs.Queue(this, 'PipeDLQ', {
             queueName: `${STACK_OWNER}PipeDLQ`,
@@ -243,8 +324,8 @@ export class OrderService extends NestedStack {
         });
 
         const handlers = {
-            enrichOrderEventFn: createLambdaHandler(this, 'EnrichOrderEventFunction', {
-                name: `${STACK_OWNER}EnrichOrderEventFunction`,
+            enrichOrderEventFn: createLambdaHandler(this, 'EnrichOrderEventFunctionForPipe', {
+                name: `${STACK_OWNER}EnrichOrderEventFunctionForPipe`,
                 runtime: ORDER_CONFIG.LAMBDA_RUNTIME,
                 codeAsset: lambda.Code.fromAsset('src/orders/enrich_order_event'),
                 handler: 'enrich_order_event.handler',
@@ -252,8 +333,8 @@ export class OrderService extends NestedStack {
                     layers: lambdaOptions.layers,
                 },
             }),
-            processOrderFn: createLambdaHandler(this, 'ProcessOrderFunction', {
-                name: `${STACK_OWNER}ProcessOrderFunction`,
+            processOrderFn: createLambdaHandler(this, 'ProcessOrderFunctionForPipe', {
+                name: `${STACK_OWNER}ProcessOrderFunctionForPipe`,
                 runtime: ORDER_CONFIG.LAMBDA_RUNTIME,
                 codeAsset: lambda.Code.fromAsset('src/orders/process_order'),
                 handler: 'process_order.handler',
@@ -286,8 +367,8 @@ export class OrderService extends NestedStack {
                     startingPosition: 'LATEST',
                     // Set the batch size to 1
                     batchSize: 1, 
-                    // Set the maximum batch window to 120 seconds
-                    maximumBatchingWindowInSeconds: 120,
+                    // Set the maximum batch window
+                    maximumBatchingWindowInSeconds: 1,
                     maximumRetryAttempts: 3,
                     deadLetterConfig: {
                         arn: pipeDLQ.queueArn,
@@ -312,7 +393,7 @@ export class OrderService extends NestedStack {
             targetParameters: {
                 eventBridgeEventBusParameters: {
                     detailType: 'OrderChanged',
-                    source: 'order.event',
+                    source: 'service.order.dynamodb.stream',
                 },
             },
             // DynamoDB Stream Record
@@ -324,16 +405,16 @@ export class OrderService extends NestedStack {
             },
         });
 
-        const orderCreatedQueue = new sqs.Queue(this, 'OrderCreatedQueue', {
-            queueName: `${STACK_OWNER}OrderCreatedQueue.fifo`,
+        const orderCreatedQueue = new sqs.Queue(this, 'OrderCreatedQueueForPipe', {
+            queueName: `${STACK_OWNER}OrderCreatedQueueForPipe.fifo`,
             fifo: true,
             deduplicationScope: sqs.DeduplicationScope.MESSAGE_GROUP,
             contentBasedDeduplication: true,
             deliveryDelay: Duration.seconds(120),
             deadLetterQueue: {
                 maxReceiveCount: 3,
-                queue: new sqs.Queue(this, 'OrderCreatedDLQ', {
-                    queueName: `${STACK_OWNER}OrderCreatedDLQ.fifo`,
+                queue: new sqs.Queue(this, 'OrderCreatedDLQForPipe', {
+                    queueName: `${STACK_OWNER}OrderCreatedDLQForPipe.fifo`,
                     fifo: true,
                 }),
             },
@@ -346,7 +427,7 @@ export class OrderService extends NestedStack {
         );
         this.dynamoDb.table.grantReadWriteData(handlers.processOrderFn);
 
-        const queuePolicy = new sqs.CfnQueuePolicy(this, 'OrderCreatedQueuePolicy', {
+        const queuePolicy = new sqs.CfnQueuePolicy(this, 'OrderCreatedQueueForPipePolicy', {
             policyDocument: new iam.PolicyDocument({
                 statements: [
                     new iam.PolicyStatement({
@@ -360,13 +441,13 @@ export class OrderService extends NestedStack {
             queues: [orderCreatedQueue.queueUrl],
         });
 
-        const orderCreatedEventRule = new events.Rule(this, 'OrderCreatedRule', {
+        const orderCreatedEventRule = new events.Rule(this, 'OrderCreatedRuleForPipe', {
             eventBus: orderEventBus,
-            ruleName: `${STACK_OWNER}OrderCreatedRule`,
+            ruleName: `${STACK_OWNER}OrderCreatedRuleForPipe`,
             description: 'Rule to capture order created events',
             targets: [
                 new eventTargets.SqsQueue(orderCreatedQueue, {
-                    messageGroupId: 'OrderInserted',
+                    messageGroupId: 'OrderCreated',
                     retryAttempts: 3, // Set the retry policy to 3 attempts
                     maxEventAge: Duration.seconds(300),  // Set the maxEventAge retry policy to 5 minutes
                     deadLetterQueue: pipeDLQ,
@@ -376,10 +457,10 @@ export class OrderService extends NestedStack {
             // https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events-structure.html
             eventPattern: {
                 detailType: ['OrderChanged'],
-                source: ['order.event'],
+                source: ['service.order.dynamodb.stream'],
                 detail: {
                     meta: {
-                        eventName: ['ORDER_INSERT'],
+                        eventName: ['ORDER_CREATED'],
                     },
                 },
             },
