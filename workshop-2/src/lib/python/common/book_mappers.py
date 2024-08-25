@@ -1,4 +1,4 @@
-def mapBookListItem(item):
+def map_book_list_item(item):
     return {
         'id': item['PK']['S'],
         'title': item["Title"]['S'],
@@ -6,7 +6,7 @@ def mapBookListItem(item):
         'publishedDate': item["PublishedDate"]['S'],
     }
 
-def mapBookDetail(item):
+def map_book_detail(item):
     return {
         'id': item['PK']['S'],
         'title': item["Title"]['S'],
@@ -14,7 +14,7 @@ def mapBookDetail(item):
         'publishedDate': item["PublishedDate"]['S'],
     }
 
-def mapBookReview(item):
+def map_book_review(item):
     return {
         'id': item['SK']['S'],
         'bookId': item['PK']['S'],

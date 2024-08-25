@@ -21,8 +21,7 @@ RUN apt-get update \
     unzip \
     wget \
     zip \
-    zsh \
-    postgresql-client
+    zsh
 
 # Install Node.js v20
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
@@ -67,7 +66,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 #     php8.2-zip \
 #     && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Install AWS v2 CLI
 RUN curl -sSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip \

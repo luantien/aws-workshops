@@ -29,7 +29,7 @@ def handler(event, context):
         if 'Item' in response:
             return {
                 'statusCode': 200,
-                'body': json.dumps(mappers.mapBookDetail(response['Item']))
+                'body': json.dumps(mappers.map_book_detail(response['Item']))
             }
     
     return {

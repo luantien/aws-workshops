@@ -52,5 +52,5 @@ def handler(event, context):
     
     return {
         'statusCode': 200,
-        'body': json.dumps([*map(mappers.mapBookListItem, data['Items'])])
+        'body': json.dumps([*map(mappers.map_book_list_item, data['Items'])])
     }
