@@ -1,6 +1,7 @@
-# Module 1 - Books Service
-![alt Workshop2 - Module 1](./img/ws2_m1_all.png)
-## Cognito Services
+# Module 1 - Book Service
+![alt Workshop 2 - Module 1](./img/ws2_m1_all.png)
+
+## Cognito Service
 - Create `.env` file from `.env.sample` and update the relevant variables.
 ```bash
 # Move to 'workshop-2' directory
@@ -12,8 +13,8 @@ export $(grep -v '^#' .env | xargs)
 # Deploy Cognito Services with CDK
 cdk deploy --profile ${AWS_USERNAME}
 ```
-## Book API Services
-### Part 1: Book Resource Endpoints
+## Book API Service
+### Part 1: Book Resource Endpoint
 
 ![alt Module 1 - Part 1](./img/ws2_m1_p1.png)
 
@@ -32,7 +33,7 @@ export $(grep -v '^#' .env | xargs)
 - Then deploy the cdk stack again using `cdk deploy`. You can also run `cdk synth` before the deployment and have a look on `cdk.out` folder to see the changes in the stack.
 
 ```bash
-# Deploy Book Services with CDK
+# Deploy Book Service with CDK
 cdk deploy --profile ${AWS_USERNAME}
 ```
 
@@ -50,7 +51,7 @@ cdk deploy --profile ${AWS_USERNAME}
 aws dynamodb batch-write-item --profile ${AWS_USERNAME} --request-items file://./src/seeders/data-seeder.json
 ```
 
-## Part 2: Book Review Resource Endpoints
+### Part 2: Book Review Resource Endpoints
 
 ![alt Module 1 - Part 1](./img/ws2_m1_p2.png)
 
@@ -64,4 +65,10 @@ export $(grep -v '^#' .env | xargs)
 ```bash
 # Deploy Book Services with CDK
 cdk deploy --profile ${AWS_USERNAME}
+```
+
+## Clean Up All Stacks
+```bash
+# Destroy All Stacks
+cdk destroy --profile ${AWS_USERNAME}
 ```

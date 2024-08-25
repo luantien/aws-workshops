@@ -68,10 +68,14 @@ export class BookService extends NestedStack {
         this.gateway = new agw.RestApi(this, 'BooksRestAPI', {
             restApiName: `${STACK_OWNER}BooksApi`,
             description: 'Book Service Rest APIs',
-            cloudWatchRole: true,
+            cloudWatchRole: false,
             deployOptions: {
+                // TODO: Need to test the access log destination customization
+                // accessLogDestination: new agw.LogGroupLogDestination(new LogGroup(this, 'BookApiLogGroup', {
+                //     logGroupName: `/aws/apigateway/${STACK_OWNER}/book-rest-api`,
+                //     retention: 1,
+                // })),
                 loggingLevel: agw.MethodLoggingLevel.INFO,
-                dataTraceEnabled: false, 
                 tracingEnabled: true,
                 stageName: 'v1',
             },

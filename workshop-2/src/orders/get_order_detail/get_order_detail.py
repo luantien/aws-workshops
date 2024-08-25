@@ -40,7 +40,7 @@ def handler(event, context):
         if 'Items' in response:
             return {
                 'statusCode': 200,
-                'body': json.dumps(mappers.mapOrderDetail(response['Items']))
+                'body': json.dumps(mappers.map_order_detail(response['Items']))
             }
         
     return {

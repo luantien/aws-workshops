@@ -16,13 +16,23 @@
 							"type": "oauth2",
 							"oauth2": [
 								{
-									"key": "grant_type",
-									"value": "authorization_code_with_pkce",
+									"key": "tokenName",
+									"value": "",
 									"type": "string"
 								},
 								{
-									"key": "tokenName",
-									"value": "Congito",
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "clientId",
+									"value": "{{WEB_USERPOOL_CLIENT}}",
 									"type": "string"
 								},
 								{
@@ -50,6 +60,11 @@
 									"type": "any"
 								},
 								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
 									"key": "accessTokenUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/token",
 									"type": "string"
@@ -57,16 +72,6 @@
 								{
 									"key": "authUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
-									"type": "string"
-								},
-								{
-									"key": "clientId",
-									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
-									"type": "string"
-								},
-								{
-									"key": "redirect_uri",
-									"value": "https://localhost",
 									"type": "string"
 								},
 								{
@@ -88,11 +93,6 @@
 									"key": "scope",
 									"value": "openid",
 									"type": "string"
-								},
-								{
-									"key": "useBrowser",
-									"value": false,
-									"type": "boolean"
 								}
 							]
 						},
@@ -129,6 +129,21 @@
 							"type": "oauth2",
 							"oauth2": [
 								{
+									"key": "tokenName",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{WEB_USERPOOL_CLIENT}}",
+									"type": "string"
+								},
+								{
 									"key": "accessTokenUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/token",
 									"type": "string"
@@ -136,16 +151,6 @@
 								{
 									"key": "authUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
-									"type": "string"
-								},
-								{
-									"key": "clientId",
-									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
-									"type": "string"
-								},
-								{
-									"key": "redirect_uri",
-									"value": "https://localhost",
 									"type": "string"
 								},
 								{
@@ -161,11 +166,6 @@
 								{
 									"key": "challengeAlgorithm",
 									"value": "S256",
-									"type": "string"
-								},
-								{
-									"key": "tokenName",
-									"value": "id_token",
 									"type": "string"
 								},
 								{
@@ -207,6 +207,16 @@
 							"type": "oauth2",
 							"oauth2": [
 								{
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{WEB_USERPOOL_CLIENT}}",
+									"type": "string"
+								},
+								{
 									"key": "accessTokenUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/token",
 									"type": "string"
@@ -214,16 +224,6 @@
 								{
 									"key": "authUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
-									"type": "string"
-								},
-								{
-									"key": "clientId",
-									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
-									"type": "string"
-								},
-								{
-									"key": "redirect_uri",
-									"value": "https://localhost",
 									"type": "string"
 								},
 								{
@@ -273,7 +273,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"reviewer\": \"Sample User 1\",\r\n    \"message\": \"This book is great!\"\r\n}",
+							"raw": "{\r\n    \"reviewer\": \"Sample User 1\",\r\n    \"message\": \"This book is brilliant!\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -304,6 +304,16 @@
 							"type": "oauth2",
 							"oauth2": [
 								{
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{WEB_USERPOOL_CLIENT}}",
+									"type": "string"
+								},
+								{
 									"key": "accessTokenUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/token",
 									"type": "string"
@@ -311,16 +321,6 @@
 								{
 									"key": "authUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
-									"type": "string"
-								},
-								{
-									"key": "clientId",
-									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
-									"type": "string"
-								},
-								{
-									"key": "redirect_uri",
-									"value": "https://localhost",
 									"type": "string"
 								},
 								{
@@ -423,17 +423,22 @@
 									"            \"bookId\": \"b#2\",\r",
 									"            \"quantity\": 3,\r",
 									"            \"price\": 12.99\r",
-									"        }\r",
+									"        },\r",
+									"        // {\r",
+									"        //     \"bookId\": \"b#3\",\r",
+									"        //     \"quantity\": 1,\r",
+									"        //     \"price\": 14.99\r",
+									"        // }\r",
 									"    ],\r",
-									"    // total: 0.00\r",
+									"    total: 0.00\r",
 									"}\r",
 									"body.total = body.items.reduce((total, item) => total + (item.price * item.quantity), 0);\r",
 									"\r",
 									"pm.environment.set(\"CREATE_ORDER_REQUEST_BODY\", JSON.stringify(body));\r",
-									"\r",
 									""
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						},
 						{
@@ -447,7 +452,8 @@
 									"}\r",
 									""
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -456,13 +462,23 @@
 							"type": "oauth2",
 							"oauth2": [
 								{
-									"key": "grant_type",
-									"value": "authorization_code_with_pkce",
+									"key": "tokenName",
+									"value": "",
 									"type": "string"
 								},
 								{
-									"key": "tokenName",
-									"value": "Congito",
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{WEB_USERPOOL_CLIENT}}",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
 									"type": "string"
 								},
 								{
@@ -497,16 +513,6 @@
 								{
 									"key": "authUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
-									"type": "string"
-								},
-								{
-									"key": "clientId",
-									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
-									"type": "string"
-								},
-								{
-									"key": "redirect_uri",
-									"value": "https://localhost",
 									"type": "string"
 								},
 								{
@@ -577,13 +583,23 @@
 							"type": "oauth2",
 							"oauth2": [
 								{
+									"key": "tokenName",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
 									"key": "grant_type",
 									"value": "authorization_code_with_pkce",
 									"type": "string"
 								},
 								{
-									"key": "tokenName",
-									"value": "Congito",
+									"key": "clientId",
+									"value": "{{WEB_USERPOOL_CLIENT}}",
 									"type": "string"
 								},
 								{
@@ -618,16 +634,6 @@
 								{
 									"key": "authUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
-									"type": "string"
-								},
-								{
-									"key": "clientId",
-									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
-									"type": "string"
-								},
-								{
-									"key": "redirect_uri",
-									"value": "https://localhost",
 									"type": "string"
 								},
 								{
@@ -679,13 +685,23 @@
 							"type": "oauth2",
 							"oauth2": [
 								{
-									"key": "grant_type",
-									"value": "authorization_code_with_pkce",
+									"key": "tokenName",
+									"value": "",
 									"type": "string"
 								},
 								{
-									"key": "tokenName",
-									"value": "Congito",
+									"key": "redirect_uri",
+									"value": "https://localhost",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{WEB_USERPOOL_CLIENT}}",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
 									"type": "string"
 								},
 								{
@@ -720,16 +736,6 @@
 								{
 									"key": "authUrl",
 									"value": "{{COGNITO_DOMAIN}}/oauth2/authorize",
-									"type": "string"
-								},
-								{
-									"key": "clientId",
-									"value": "{{BOOK_API_USERPOOL_CLIENT}}",
-									"type": "string"
-								},
-								{
-									"key": "redirect_uri",
-									"value": "https://localhost",
 									"type": "string"
 								},
 								{
