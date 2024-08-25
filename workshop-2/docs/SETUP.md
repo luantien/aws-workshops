@@ -38,6 +38,9 @@ cp .env.example .env
 # Expose the environment variables to the shell
 export $(grep -v '^#' .env | xargs)
 ```
+## Import API Collection
+- Import Postman Collection in folder [`docs/api`](api/)
+- Import Postman Environment in folder [`docs/api`](api/)
 ## Repository Structure
 ```bash
 |-- .devcontainer               # VSCode devcontainer configuration
