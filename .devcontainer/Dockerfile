@@ -27,6 +27,15 @@ RUN apt-get update \
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
+# Install AWS v2 CLI
+RUN curl -sSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip \
+    && unzip awscliv2.zip \
+    && ./aws/install \
+    && rm -rf awscliv2.zip aws
+
+# Install AWS CDK
+RUN npm install -g aws-cdk
+
 # Install PHP 8.1 Runtime and Modules
 # RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/sury-php.list \
 #     && wget -qO - https://packages.sury.org/php/apt.gpg | apt-key add - \
@@ -67,12 +76,3 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 #     && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install Composer
 # RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Install AWS v2 CLI
-RUN curl -sSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip \
-    && unzip awscliv2.zip \
-    && ./aws/install \
-    && rm -rf awscliv2.zip aws
-
-# Install AWS CDK
-RUN npm install -g aws-cdk
