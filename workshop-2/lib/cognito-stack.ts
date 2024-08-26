@@ -67,7 +67,7 @@ export class CognitoService extends NestedStack {
         new CfnOutput(this, 'WebApiPoolClientId', {
             value: this.userPoolClient?.userPoolClientId ?? '',
             description: 'Order REST API User Pool Client Id',
-            exportName: `WebApiUserPoolClientId`,
+            exportName: `${COGNITO_CONFIG.USERPOOL_NAME}ClientId`,
         });
     }
 
