@@ -5,10 +5,10 @@ import { MainStack } from '../lib/main';
 
 const app = new cdk.App();
 const username = process.env.AWS_USERNAME || 'anonymous';
+const stackId = `${username.toUpperCase()}-CWS`;
 
-
-new MainStack(app, 'MainStack', {
-  stackName: `${username.toUpperCase()}-CWS`,
+new MainStack(app, stackId, {
+  stackName: stackId,
   description: 'AWS Container Workshop with Beanstalk, ECS, ECR, and Fargate',
 });
 
