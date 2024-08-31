@@ -64,6 +64,12 @@ export class CognitoService extends NestedStack {
             exportName: `${COGNITO_CONFIG.USERPOOL_NAME}Domain`,
         });
 
+        new CfnOutput(this, 'UserPoolJWKSUrl', {
+            value: `https://cognito-idp.${STACK_REGION}.amazonaws.com/${this.userPool.userPoolId}/.well-known/jwks.json`,
+            description: 'User Pool JWKS URL',
+            exportName: `${COGNITO_CONFIG.USERPOOL_NAME}JWKSUrl`,
+        });
+
         new CfnOutput(this, 'WebApiPoolClientId', {
             value: this.userPoolClient?.userPoolClientId ?? '',
             description: 'Order REST API User Pool Client Id',
